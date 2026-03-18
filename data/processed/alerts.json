@@ -1,0 +1,1734 @@
+[
+  {
+    "alert_id": "ead0109a-ac30-402a-9ec3-bd6900d81b65",
+    "flagged_subgraph": {
+      "pattern_type": "cycle",
+      "node_ids": [
+        "ACC00007",
+        "ACC00028",
+        "ACC00041",
+        "ACC00018",
+        "ACC00020",
+        "ACC00016"
+      ],
+      "edge_ids": [
+        "2e90f525-61a4-4989-859c-dace28ec2168",
+        "d0b6a1f4-2551-4ecc-9dbc-4156d37ed657",
+        "b40c3787-d0e2-4372-ace1-45f5655fdaf3",
+        "76648f0d-650e-4189-8adf-9a37dc6e921c",
+        "9863bd2e-9ffd-484a-835f-ceeb0eacd988",
+        "bae1710f-cb1d-4c9b-a207-e8e147dcafce"
+      ],
+      "primary_node": "ACC00007",
+      "amount_involved": 91136.83,
+      "contributing_signals": {
+        "cycle_length": 6,
+        "directed_cycle": true
+      }
+    },
+    "structural_score": 50,
+    "innocence_discount_pct": 0.0,
+    "final_score": 50.0,
+    "risk_band": "elevated",
+    "disposition": "immediate_review",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.948522",
+    "status": "open"
+  },
+  {
+    "alert_id": "3cf3f510-8680-462c-94dd-d3f6f19d7c69",
+    "flagged_subgraph": {
+      "pattern_type": "cycle",
+      "node_ids": [
+        "ACC00005",
+        "ACC00050",
+        "ACC00028",
+        "ACC00041",
+        "ACC00018",
+        "ACC00020",
+        "ACC00016",
+        "ACC00007"
+      ],
+      "edge_ids": [
+        "6f4202ff-b709-41c8-b19c-a62931e255c4",
+        "88b22742-8cbc-4e99-9b69-4ce3a6b0ab58",
+        "d0b6a1f4-2551-4ecc-9dbc-4156d37ed657",
+        "b40c3787-d0e2-4372-ace1-45f5655fdaf3",
+        "76648f0d-650e-4189-8adf-9a37dc6e921c",
+        "9863bd2e-9ffd-484a-835f-ceeb0eacd988",
+        "bae1710f-cb1d-4c9b-a207-e8e147dcafce",
+        "8ebe5eb8-99de-4286-82e9-9dda412a4df0"
+      ],
+      "primary_node": "ACC00005",
+      "amount_involved": 94932.34999999999,
+      "contributing_signals": {
+        "cycle_length": 8,
+        "directed_cycle": true
+      }
+    },
+    "structural_score": 50,
+    "innocence_discount_pct": 0.0,
+    "final_score": 50.0,
+    "risk_band": "elevated",
+    "disposition": "immediate_review",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.948668",
+    "status": "open"
+  },
+  {
+    "alert_id": "afb8d617-8265-472f-9e68-3eb93e1e59f7",
+    "flagged_subgraph": {
+      "pattern_type": "cycle",
+      "node_ids": [
+        "ACC00006",
+        "ACC00019",
+        "ACC00028",
+        "ACC00041",
+        "ACC00018",
+        "ACC00020",
+        "ACC00016",
+        "ACC00007"
+      ],
+      "edge_ids": [
+        "534082be-2057-4a20-bd52-ca20bb9af761",
+        "e6a179fd-938e-4aad-bae7-9b940cea094d",
+        "d0b6a1f4-2551-4ecc-9dbc-4156d37ed657",
+        "b40c3787-d0e2-4372-ace1-45f5655fdaf3",
+        "76648f0d-650e-4189-8adf-9a37dc6e921c",
+        "9863bd2e-9ffd-484a-835f-ceeb0eacd988",
+        "bae1710f-cb1d-4c9b-a207-e8e147dcafce",
+        "a7664356-ca3b-4f0f-bb24-fed11a0187c6"
+      ],
+      "primary_node": "ACC00006",
+      "amount_involved": 101232.7,
+      "contributing_signals": {
+        "cycle_length": 8,
+        "directed_cycle": true
+      }
+    },
+    "structural_score": 50,
+    "innocence_discount_pct": 0.0,
+    "final_score": 50.0,
+    "risk_band": "elevated",
+    "disposition": "immediate_review",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.949076",
+    "status": "open"
+  },
+  {
+    "alert_id": "a5454084-81ba-4ade-9aad-76ba9fdbdb06",
+    "flagged_subgraph": {
+      "pattern_type": "cycle",
+      "node_ids": [
+        "ACC00001",
+        "ACC00039",
+        "ACC00028",
+        "ACC00041",
+        "ACC00018",
+        "ACC00020",
+        "ACC00016",
+        "ACC00007"
+      ],
+      "edge_ids": [
+        "60c7c5b9-71d1-4a82-aa86-8b543ee4264b",
+        "7f8ac03a-0501-4b52-8287-7d8d472cfcf3",
+        "d0b6a1f4-2551-4ecc-9dbc-4156d37ed657",
+        "b40c3787-d0e2-4372-ace1-45f5655fdaf3",
+        "76648f0d-650e-4189-8adf-9a37dc6e921c",
+        "9863bd2e-9ffd-484a-835f-ceeb0eacd988",
+        "bae1710f-cb1d-4c9b-a207-e8e147dcafce",
+        "8972e031-fa4f-46a2-87d3-c8cb8e831d59"
+      ],
+      "primary_node": "ACC00001",
+      "amount_involved": 99931.70999999999,
+      "contributing_signals": {
+        "cycle_length": 8,
+        "directed_cycle": true
+      }
+    },
+    "structural_score": 50,
+    "innocence_discount_pct": 0.0,
+    "final_score": 50.0,
+    "risk_band": "elevated",
+    "disposition": "immediate_review",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.949214",
+    "status": "open"
+  },
+  {
+    "alert_id": "c82f8be4-630b-4eca-9ba8-486e137ae499",
+    "flagged_subgraph": {
+      "pattern_type": "cycle",
+      "node_ids": [
+        "ACC00013",
+        "ACC00034",
+        "ACC00042",
+        "ACC00028",
+        "ACC00041",
+        "ACC00018",
+        "ACC00020",
+        "ACC00016"
+      ],
+      "edge_ids": [
+        "d9830e3d-a853-4b0f-89f1-fa2fdbfb7a2c",
+        "d8188872-a6a6-4cad-a490-715c89171af7",
+        "65ab9621-0927-4cbc-a5e0-a577b1493919",
+        "d0b6a1f4-2551-4ecc-9dbc-4156d37ed657",
+        "b40c3787-d0e2-4372-ace1-45f5655fdaf3",
+        "76648f0d-650e-4189-8adf-9a37dc6e921c",
+        "9863bd2e-9ffd-484a-835f-ceeb0eacd988",
+        "79ba26d5-1651-4bcd-9d37-20520bf8df13"
+      ],
+      "primary_node": "ACC00013",
+      "amount_involved": 80463.31,
+      "contributing_signals": {
+        "cycle_length": 8,
+        "directed_cycle": true
+      }
+    },
+    "structural_score": 50,
+    "innocence_discount_pct": 0.0,
+    "final_score": 50.0,
+    "risk_band": "elevated",
+    "disposition": "immediate_review",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.949348",
+    "status": "open"
+  },
+  {
+    "alert_id": "e5ae811f-4623-40fe-bcda-5ce2d34824bd",
+    "flagged_subgraph": {
+      "pattern_type": "cycle",
+      "node_ids": [
+        "ACC00018",
+        "ACC00020",
+        "ACC00037",
+        "ACC00040",
+        "ACC00021",
+        "ACC00039",
+        "ACC00028",
+        "ACC00041"
+      ],
+      "edge_ids": [
+        "76648f0d-650e-4189-8adf-9a37dc6e921c",
+        "335aebc4-366b-4831-83ac-cb6ed40f3286",
+        "6badcde0-a53e-4f88-a007-5760628ea61e",
+        "f742b16a-d285-4a50-9568-5a05526862c6",
+        "4e770561-c4d0-4ee6-bd18-125c606fe40d",
+        "08b5de5f-adce-449e-91c4-b2ae135fc63a",
+        "7f8ac03a-0501-4b52-8287-7d8d472cfcf3",
+        "d0b6a1f4-2551-4ecc-9dbc-4156d37ed657",
+        "b40c3787-d0e2-4372-ace1-45f5655fdaf3"
+      ],
+      "primary_node": "ACC00018",
+      "amount_involved": 116920.1,
+      "contributing_signals": {
+        "cycle_length": 8,
+        "directed_cycle": true
+      }
+    },
+    "structural_score": 50,
+    "innocence_discount_pct": 0.0,
+    "final_score": 50.0,
+    "risk_band": "elevated",
+    "disposition": "immediate_review",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.949506",
+    "status": "open"
+  },
+  {
+    "alert_id": "5a6eb359-72f9-42d0-b79d-d9b9e414af13",
+    "flagged_subgraph": {
+      "pattern_type": "cycle",
+      "node_ids": [
+        "ACC00012",
+        "ACC00013",
+        "ACC00019",
+        "ACC00028",
+        "ACC00041",
+        "ACC00018",
+        "ACC00040",
+        "ACC00021"
+      ],
+      "edge_ids": [
+        "bab1e32a-ef2b-4e4d-ae03-50aff4705d00",
+        "e6b8c71d-9a09-4e94-addd-dfbb4369c2dc",
+        "e6a179fd-938e-4aad-bae7-9b940cea094d",
+        "d0b6a1f4-2551-4ecc-9dbc-4156d37ed657",
+        "b40c3787-d0e2-4372-ace1-45f5655fdaf3",
+        "411fe210-8ce5-462f-8389-88e5acb58e1d",
+        "4e770561-c4d0-4ee6-bd18-125c606fe40d",
+        "e990c13e-50b7-4d48-9cc5-1e1eaf486498"
+      ],
+      "primary_node": "ACC00012",
+      "amount_involved": 120311.72,
+      "contributing_signals": {
+        "cycle_length": 8,
+        "directed_cycle": true
+      }
+    },
+    "structural_score": 50,
+    "innocence_discount_pct": 0.0,
+    "final_score": 50.0,
+    "risk_band": "elevated",
+    "disposition": "immediate_review",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.949652",
+    "status": "open"
+  },
+  {
+    "alert_id": "06769725-8c7a-4238-af24-bd4997253d30",
+    "flagged_subgraph": {
+      "pattern_type": "cycle",
+      "node_ids": [
+        "ACC00008",
+        "ACC00037",
+        "ACC00019",
+        "ACC00028",
+        "ACC00041",
+        "ACC00018",
+        "ACC00040",
+        "ACC00021"
+      ],
+      "edge_ids": [
+        "bbefbc09-f816-4f5e-ae45-2588cd3cdcd5",
+        "e033804c-f011-4a1c-ae46-a834d51f7d72",
+        "e6a179fd-938e-4aad-bae7-9b940cea094d",
+        "d0b6a1f4-2551-4ecc-9dbc-4156d37ed657",
+        "b40c3787-d0e2-4372-ace1-45f5655fdaf3",
+        "411fe210-8ce5-462f-8389-88e5acb58e1d",
+        "4e770561-c4d0-4ee6-bd18-125c606fe40d",
+        "a72da30d-039a-4916-83d0-c955bd8e7387",
+        "498ee373-ed5d-4209-9897-ffdb5cc5d30e"
+      ],
+      "primary_node": "ACC00008",
+      "amount_involved": 156520.12,
+      "contributing_signals": {
+        "cycle_length": 8,
+        "directed_cycle": true
+      }
+    },
+    "structural_score": 50,
+    "innocence_discount_pct": 0.0,
+    "final_score": 50.0,
+    "risk_band": "elevated",
+    "disposition": "immediate_review",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.949797",
+    "status": "open"
+  },
+  {
+    "alert_id": "6d6d5859-85d2-404c-b7f2-8f515f591a8d",
+    "flagged_subgraph": {
+      "pattern_type": "cycle",
+      "node_ids": [
+        "ACC00014",
+        "ACC00037",
+        "ACC00019",
+        "ACC00028",
+        "ACC00041",
+        "ACC00018",
+        "ACC00040",
+        "ACC00022"
+      ],
+      "edge_ids": [
+        "f6d3475e-14d8-4cc9-8823-8d62b0d97b1a",
+        "e033804c-f011-4a1c-ae46-a834d51f7d72",
+        "e6a179fd-938e-4aad-bae7-9b940cea094d",
+        "d0b6a1f4-2551-4ecc-9dbc-4156d37ed657",
+        "b40c3787-d0e2-4372-ace1-45f5655fdaf3",
+        "411fe210-8ce5-462f-8389-88e5acb58e1d",
+        "4a1674c6-bbbd-4e7a-9e28-9f784f5e3630",
+        "79ccbca6-99b6-4c17-bbdd-ab6ee0c2a123"
+      ],
+      "primary_node": "ACC00014",
+      "amount_involved": 132350.11,
+      "contributing_signals": {
+        "cycle_length": 8,
+        "directed_cycle": true
+      }
+    },
+    "structural_score": 50,
+    "innocence_discount_pct": 0.0,
+    "final_score": 50.0,
+    "risk_band": "elevated",
+    "disposition": "immediate_review",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.949934",
+    "status": "open"
+  },
+  {
+    "alert_id": "17fd281e-b08e-4a16-a3ac-75553b4c0fea",
+    "flagged_subgraph": {
+      "pattern_type": "cycle",
+      "node_ids": [
+        "ACC00010",
+        "ACC00015",
+        "ACC00019",
+        "ACC00028",
+        "ACC00041",
+        "ACC00018",
+        "ACC00040"
+      ],
+      "edge_ids": [
+        "a756c27c-ef2c-4a98-9aa7-55d68b9d22a6",
+        "c4ff6d10-7a21-4423-b7b3-2d9da87d0a37",
+        "e6a179fd-938e-4aad-bae7-9b940cea094d",
+        "d0b6a1f4-2551-4ecc-9dbc-4156d37ed657",
+        "b40c3787-d0e2-4372-ace1-45f5655fdaf3",
+        "411fe210-8ce5-462f-8389-88e5acb58e1d",
+        "c54b9ab5-9da6-41d5-8e8c-7cd9be375fee"
+      ],
+      "primary_node": "ACC00010",
+      "amount_involved": 112921.26000000001,
+      "contributing_signals": {
+        "cycle_length": 7,
+        "directed_cycle": true
+      }
+    },
+    "structural_score": 50,
+    "innocence_discount_pct": 0.0,
+    "final_score": 50.0,
+    "risk_band": "elevated",
+    "disposition": "immediate_review",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.950066",
+    "status": "open"
+  },
+  {
+    "alert_id": "624f8c99-4891-484a-94f6-89100335ad9d",
+    "flagged_subgraph": {
+      "pattern_type": "cycle",
+      "node_ids": [
+        "ACC00003",
+        "ACC00016",
+        "ACC00007",
+        "ACC00028",
+        "ACC00041",
+        "ACC00018",
+        "ACC00040",
+        "ACC00024"
+      ],
+      "edge_ids": [
+        "b7d02393-c25f-44ec-bd81-acf1ffbc52c5",
+        "bae1710f-cb1d-4c9b-a207-e8e147dcafce",
+        "2e90f525-61a4-4989-859c-dace28ec2168",
+        "d0b6a1f4-2551-4ecc-9dbc-4156d37ed657",
+        "b40c3787-d0e2-4372-ace1-45f5655fdaf3",
+        "411fe210-8ce5-462f-8389-88e5acb58e1d",
+        "18314c09-2e95-48d1-8699-5c9fca1b8ba0",
+        "f0ee53a8-f451-47c1-bfae-e8dfdc2eb5c3"
+      ],
+      "primary_node": "ACC00003",
+      "amount_involved": 164154.82,
+      "contributing_signals": {
+        "cycle_length": 8,
+        "directed_cycle": true
+      }
+    },
+    "structural_score": 50,
+    "innocence_discount_pct": 0.0,
+    "final_score": 50.0,
+    "risk_band": "elevated",
+    "disposition": "immediate_review",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.950281",
+    "status": "open"
+  },
+  {
+    "alert_id": "293b020f-7815-4cee-9ae7-9953fbbe46ce",
+    "flagged_subgraph": {
+      "pattern_type": "fan_in",
+      "node_ids": [
+        "ACC00028",
+        "ACC00024",
+        "ACC00039",
+        "ACC00050",
+        "ACC00019",
+        "ACC00007",
+        "ACC00042",
+        "ACC00041",
+        "ACC00030"
+      ],
+      "edge_ids": [
+        "327d3eea-43c5-4065-b3ed-5a1c97e70e6a",
+        "7f8ac03a-0501-4b52-8287-7d8d472cfcf3",
+        "88b22742-8cbc-4e99-9b69-4ce3a6b0ab58",
+        "e6a179fd-938e-4aad-bae7-9b940cea094d",
+        "2e90f525-61a4-4989-859c-dace28ec2168",
+        "65ab9621-0927-4cbc-a5e0-a577b1493919",
+        "f66f09bf-6c10-4586-af1b-205af1716398",
+        "eed56b0d-275b-4453-9493-35c65e5e5972"
+      ],
+      "primary_node": "ACC00028",
+      "amount_involved": 105983.92000000001,
+      "contributing_signals": {
+        "in_degree": 8,
+        "num_sources": 8,
+        "total_inflow": 105983.92000000001
+      }
+    },
+    "structural_score": 35,
+    "innocence_discount_pct": 0.0,
+    "final_score": 35.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.950440",
+    "status": "open"
+  },
+  {
+    "alert_id": "10be541b-3b4a-4677-804c-48c07739df3b",
+    "flagged_subgraph": {
+      "pattern_type": "fan_in",
+      "node_ids": [
+        "ACC00043",
+        "ACC00027",
+        "ACC00001",
+        "ACC00011",
+        "ACC00038",
+        "ACC00026"
+      ],
+      "edge_ids": [
+        "cb7b8d1e-8dde-4e69-a646-51c413d72c9e",
+        "1930311d-2eb9-44a0-85c1-93be1d0728f1",
+        "4daa72c5-7663-41f1-b7b3-7b3a81f7a0e4",
+        "ebc6e19e-e2e1-46ce-83c2-0a550980b50a",
+        "699f0120-5635-4de4-b264-d54975eaaa73"
+      ],
+      "primary_node": "ACC00043",
+      "amount_involved": 83528.26000000001,
+      "contributing_signals": {
+        "in_degree": 5,
+        "num_sources": 5,
+        "total_inflow": 83528.26000000001
+      }
+    },
+    "structural_score": 35,
+    "innocence_discount_pct": 0.0,
+    "final_score": 35.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.950582",
+    "status": "open"
+  },
+  {
+    "alert_id": "a209b58e-4f54-4619-952b-860ba52fc681",
+    "flagged_subgraph": {
+      "pattern_type": "fan_in",
+      "node_ids": [
+        "ACC00036",
+        "ACC00019",
+        "ACC00045",
+        "ACC00038",
+        "ACC00029",
+        "ACC00049",
+        "ACC00026"
+      ],
+      "edge_ids": [
+        "d565d2a3-6df9-45ad-acef-fd2bb5cbc33c",
+        "906c37b2-8d0c-4fc3-ba14-b02a209fa769",
+        "9862637d-3988-42c5-9c72-e63375deb808",
+        "537137e5-eab8-4e12-a4dc-070950aaa4bc",
+        "c63cd5d0-2606-43b1-81fd-86348da55e13",
+        "94ea2761-cba9-4336-8f58-1bd777acf4bb",
+        "6850aa5f-ceaf-4c4e-b023-27b347ca8eeb",
+        "f739bf7b-4c3c-4061-90f8-8986401d0453"
+      ],
+      "primary_node": "ACC00036",
+      "amount_involved": 65578.63,
+      "contributing_signals": {
+        "in_degree": 8,
+        "num_sources": 6,
+        "total_inflow": 65578.63
+      }
+    },
+    "structural_score": 35,
+    "innocence_discount_pct": 0.0,
+    "final_score": 35.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.950732",
+    "status": "open"
+  },
+  {
+    "alert_id": "46728bbb-01f8-40b9-b57e-af58170ef404",
+    "flagged_subgraph": {
+      "pattern_type": "fan_in",
+      "node_ids": [
+        "ACC00049",
+        "ACC00033",
+        "ACC00003",
+        "ACC00029",
+        "ACC00035",
+        "ACC00038"
+      ],
+      "edge_ids": [
+        "9c4bc513-35ed-43fc-b8ed-14344bdc12bc",
+        "ab0c17ec-2b2e-41b3-ae7f-c4d246da62b2",
+        "5b47dfef-5117-42ee-8f32-47f56372371f",
+        "2b3fd436-f1b8-4df7-8fd9-2d564dc97a47",
+        "c6e0695a-f399-4478-aae4-d0af0d2c6a91"
+      ],
+      "primary_node": "ACC00049",
+      "amount_involved": 41380.68,
+      "contributing_signals": {
+        "in_degree": 5,
+        "num_sources": 5,
+        "total_inflow": 41380.68
+      }
+    },
+    "structural_score": 35,
+    "innocence_discount_pct": 0.0,
+    "final_score": 35.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.950870",
+    "status": "open"
+  },
+  {
+    "alert_id": "fa1b81b0-e24b-46f2-bd48-75d07c673b66",
+    "flagged_subgraph": {
+      "pattern_type": "fan_in",
+      "node_ids": [
+        "ACC00039",
+        "ACC00041",
+        "ACC00021",
+        "ACC00011",
+        "ACC00001",
+        "ACC00005"
+      ],
+      "edge_ids": [
+        "751fd7b4-c3fb-49fa-b343-41407dc2e584",
+        "08b5de5f-adce-449e-91c4-b2ae135fc63a",
+        "d5b5daca-e42f-4156-922d-d1eb227736c3",
+        "60c7c5b9-71d1-4a82-aa86-8b543ee4264b",
+        "24a5a2fb-f2ad-4251-bc75-6f62f07b78b6"
+      ],
+      "primary_node": "ACC00039",
+      "amount_involved": 54177.11,
+      "contributing_signals": {
+        "in_degree": 5,
+        "num_sources": 5,
+        "total_inflow": 54177.11
+      }
+    },
+    "structural_score": 35,
+    "innocence_discount_pct": 0.0,
+    "final_score": 35.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.951008",
+    "status": "open"
+  },
+  {
+    "alert_id": "ebfd3aea-e955-4daf-a0c1-082efeec1e4a",
+    "flagged_subgraph": {
+      "pattern_type": "fan_in",
+      "node_ids": [
+        "ACC00035",
+        "ACC00023",
+        "ACC00027",
+        "ACC00044",
+        "ACC00014",
+        "ACC00046",
+        "ACC00029"
+      ],
+      "edge_ids": [
+        "21467e7a-ea52-4fe9-8821-1d225adcc52f",
+        "62376c81-e823-4268-bbc6-f1a640546d8b",
+        "2fec689f-77e2-4d33-a549-c2453fdd836d",
+        "30001305-8cc5-4bc5-8406-c844e85f08a7",
+        "247ff2d7-9c95-433d-9ee5-e53fd3587d20",
+        "b0b3e25e-4b80-4ff8-b3a6-2d61f6e08f64"
+      ],
+      "primary_node": "ACC00035",
+      "amount_involved": 65267.479999999996,
+      "contributing_signals": {
+        "in_degree": 6,
+        "num_sources": 6,
+        "total_inflow": 65267.479999999996
+      }
+    },
+    "structural_score": 35,
+    "innocence_discount_pct": 0.0,
+    "final_score": 35.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.951134",
+    "status": "open"
+  },
+  {
+    "alert_id": "146120dd-03c0-4833-b354-1c8df041dbde",
+    "flagged_subgraph": {
+      "pattern_type": "fan_in",
+      "node_ids": [
+        "ACC00048",
+        "ACC00028",
+        "ACC00040",
+        "ACC00009",
+        "ACC00011",
+        "ACC00044"
+      ],
+      "edge_ids": [
+        "91d7b73e-a899-4a49-a7ba-0d5ddfa5bf98",
+        "bebf2b8e-5faf-4e61-b324-06c2fd73d75b",
+        "2b553528-f520-4fe8-a365-b33b5fde60c0",
+        "02f4e67b-c245-4f0c-84ba-439f44ebf38e",
+        "4ff5bad6-fac2-44e2-a2ca-c3c7af7d168a"
+      ],
+      "primary_node": "ACC00048",
+      "amount_involved": 66721.69,
+      "contributing_signals": {
+        "in_degree": 5,
+        "num_sources": 5,
+        "total_inflow": 66721.69
+      }
+    },
+    "structural_score": 35,
+    "innocence_discount_pct": 0.0,
+    "final_score": 35.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.951445",
+    "status": "open"
+  },
+  {
+    "alert_id": "c64e9090-a690-4033-be2f-a88007d68541",
+    "flagged_subgraph": {
+      "pattern_type": "fan_in",
+      "node_ids": [
+        "FAN_TARGET",
+        "FAN_S010",
+        "FAN_S012",
+        "FAN_S014",
+        "FAN_S015",
+        "FAN_S013",
+        "FAN_S001",
+        "FAN_S002",
+        "FAN_S005",
+        "FAN_S009",
+        "FAN_S003",
+        "FAN_S011",
+        "FAN_S008",
+        "FAN_S006",
+        "FAN_S007",
+        "FAN_S004"
+      ],
+      "edge_ids": [
+        "9b9adb98-ddce-4449-9e82-69c0e742b79b",
+        "c73dca3b-76c1-4de3-a475-07e67d9f4722",
+        "bf2b914f-10a0-41e9-9764-46b238af3fcc",
+        "69141c99-959e-4d79-b0ab-aa7e817c6566",
+        "c78e18e2-7179-4975-b186-4b841dd0c714",
+        "f74eb7cf-3dee-4f7c-bc8c-0ea924896811",
+        "4d39c0b5-286f-4511-99f6-231e341bc75b",
+        "a60fd2c9-1fcc-4a5f-8f1b-24c8525f7db6",
+        "dcf67dc4-6ef3-4bf5-9e6d-a2d26e80e69d",
+        "00653875-764c-410e-9490-cadf793fa547",
+        "7a33fd4d-0751-422c-a563-5e915e59365b",
+        "0a4b8b9d-cade-4213-ad6c-26984af4b857",
+        "4cda9113-fe65-4baf-ae98-ed3a89e12a41",
+        "bb99fd62-c1ab-487c-94b7-ff5599fcf503",
+        "641990e3-148d-4d63-a7ae-16046f86720b"
+      ],
+      "primary_node": "FAN_TARGET",
+      "amount_involved": 720858.3999999999,
+      "contributing_signals": {
+        "in_degree": 15,
+        "num_sources": 15,
+        "total_inflow": 720858.3999999999
+      }
+    },
+    "structural_score": 45,
+    "innocence_discount_pct": 0.0,
+    "final_score": 45.0,
+    "risk_band": "elevated",
+    "disposition": "immediate_review",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.951644",
+    "status": "open"
+  },
+  {
+    "alert_id": "ba0a065a-390d-48c8-97b4-fdf149dee661",
+    "flagged_subgraph": {
+      "pattern_type": "fan_in",
+      "node_ids": [
+        "ACC00016",
+        "ACC00020",
+        "ACC00047",
+        "ACC00011",
+        "ACC00006",
+        "ACC00003"
+      ],
+      "edge_ids": [
+        "9863bd2e-9ffd-484a-835f-ceeb0eacd988",
+        "e59769ae-1168-464e-886b-b9332a22a357",
+        "d223cbfe-cab7-4c55-89c5-181941d8fe4f",
+        "fd5dd2a3-5065-4e2e-a64c-895a593297f5",
+        "b7d02393-c25f-44ec-bd81-acf1ffbc52c5"
+      ],
+      "primary_node": "ACC00016",
+      "amount_involved": 40940.69,
+      "contributing_signals": {
+        "in_degree": 5,
+        "num_sources": 5,
+        "total_inflow": 40940.69
+      }
+    },
+    "structural_score": 35,
+    "innocence_discount_pct": 0.0,
+    "final_score": 35.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.951784",
+    "status": "open"
+  },
+  {
+    "alert_id": "bd4ed764-5d3d-4fb3-a748-886b3a213a23",
+    "flagged_subgraph": {
+      "pattern_type": "fan_in",
+      "node_ids": [
+        "ACC00038",
+        "ACC00004",
+        "ACC00028",
+        "ACC00043",
+        "ACC00048",
+        "ACC00012",
+        "ACC00006",
+        "ACC00037"
+      ],
+      "edge_ids": [
+        "4ac82ecf-70af-4c83-abf6-c9606aab8787",
+        "931e65f5-57cf-4e81-b535-7dbe9e9831f1",
+        "0c3035ad-9b19-45dc-8b22-a3160fd3dab5",
+        "fd2205c6-d78b-4c35-bc05-57599565ef2e",
+        "f479f91b-7ab6-4cbe-a9c3-0a1713dc2418",
+        "e5e01777-90c9-42de-ac2c-b1d17a66e47c",
+        "6f2d950a-2168-41da-8be4-c794d335c56f",
+        "d7f34b37-8230-46bf-b527-5968b6b6b84b"
+      ],
+      "primary_node": "ACC00038",
+      "amount_involved": 126845.19999999998,
+      "contributing_signals": {
+        "in_degree": 8,
+        "num_sources": 7,
+        "total_inflow": 126845.19999999998
+      }
+    },
+    "structural_score": 35,
+    "innocence_discount_pct": 0.0,
+    "final_score": 35.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.951935",
+    "status": "open"
+  },
+  {
+    "alert_id": "bcbb985b-6dd2-45e8-989f-d37cc3d09b12",
+    "flagged_subgraph": {
+      "pattern_type": "fan_in",
+      "node_ids": [
+        "ACC00019",
+        "ACC00015",
+        "ACC00036",
+        "ACC00006",
+        "ACC00013",
+        "ACC00037"
+      ],
+      "edge_ids": [
+        "c4ff6d10-7a21-4423-b7b3-2d9da87d0a37",
+        "a9648fd3-9d85-4dcb-a5a7-ee33c17a47a3",
+        "534082be-2057-4a20-bd52-ca20bb9af761",
+        "e6b8c71d-9a09-4e94-addd-dfbb4369c2dc",
+        "e033804c-f011-4a1c-ae46-a834d51f7d72"
+      ],
+      "primary_node": "ACC00019",
+      "amount_involved": 60022.549999999996,
+      "contributing_signals": {
+        "in_degree": 5,
+        "num_sources": 5,
+        "total_inflow": 60022.549999999996
+      }
+    },
+    "structural_score": 35,
+    "innocence_discount_pct": 0.0,
+    "final_score": 35.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.952079",
+    "status": "open"
+  },
+  {
+    "alert_id": "d0f28fa8-3313-4a10-889e-6987887eb224",
+    "flagged_subgraph": {
+      "pattern_type": "fan_in",
+      "node_ids": [
+        "ACC00025",
+        "ACC00049",
+        "ACC00045",
+        "ACC00011",
+        "ACC00007",
+        "ACC00017",
+        "ACC00008"
+      ],
+      "edge_ids": [
+        "2f24a112-dbcb-4662-bea4-c4f62dcff982",
+        "647ae729-8ecb-479e-a5e9-dcc26efb9da0",
+        "07933636-14fb-4bb7-b83b-7b77a7357f17",
+        "16474868-07c2-45ba-880e-5b3372925e58",
+        "68f23a38-5eba-4515-80ff-3795f41cd60c",
+        "58f24fa0-4e3a-4053-a894-ba0b8c9f81fc"
+      ],
+      "primary_node": "ACC00025",
+      "amount_involved": 41013.969999999994,
+      "contributing_signals": {
+        "in_degree": 6,
+        "num_sources": 6,
+        "total_inflow": 41013.969999999994
+      }
+    },
+    "structural_score": 35,
+    "innocence_discount_pct": 0.0,
+    "final_score": 35.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.952216",
+    "status": "open"
+  },
+  {
+    "alert_id": "c2418444-6457-4eb3-9302-4a924132de6c",
+    "flagged_subgraph": {
+      "pattern_type": "fan_in",
+      "node_ids": [
+        "ACC00027",
+        "ACC00023",
+        "ACC00047",
+        "ACC00022",
+        "ACC00005",
+        "ACC00012",
+        "ACC00030",
+        "ACC00006"
+      ],
+      "edge_ids": [
+        "4af899b7-8b5f-47a7-905e-d24a8cb4fade",
+        "7e96667c-f504-4d31-9147-bc277b1cb0b1",
+        "9ac89223-dc64-4c01-917d-c39c8c1fe8c2",
+        "157f28df-4fd9-4963-9d6f-d5b1fd000e29",
+        "c2500fdc-b8f4-494c-b17f-f3a6fc1d93b0",
+        "f185ff56-4762-4dde-b485-a7a00cbc6c06",
+        "da8f9d3d-ef0b-411f-b907-78f9fa45c8f0"
+      ],
+      "primary_node": "ACC00027",
+      "amount_involved": 90794.94,
+      "contributing_signals": {
+        "in_degree": 7,
+        "num_sources": 7,
+        "total_inflow": 90794.94
+      }
+    },
+    "structural_score": 35,
+    "innocence_discount_pct": 0.0,
+    "final_score": 35.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.952351",
+    "status": "open"
+  },
+  {
+    "alert_id": "d29dcd16-62bc-4341-9e54-d03e36bcfb47",
+    "flagged_subgraph": {
+      "pattern_type": "fan_in",
+      "node_ids": [
+        "HUB_MULE",
+        "HUB_IN04",
+        "HUB_IN06",
+        "HUB_IN03",
+        "HUB_IN02",
+        "HUB_IN05",
+        "HUB_IN07",
+        "HUB_IN01"
+      ],
+      "edge_ids": [
+        "6d99ccb2-9943-4759-89c4-8bbfdd7ae8be",
+        "158e88f2-18fd-4c8e-ae49-c833df99cfbc",
+        "52d513be-0f07-441e-aea3-885f450dc61a",
+        "88b4da24-7479-4047-b31b-5ab03ca6a45d",
+        "6d76e08e-297e-4717-b0aa-849602a18681",
+        "54005131-c227-4996-991b-60965ce43127",
+        "81a073df-241e-4e95-ae6a-3555575d63c6"
+      ],
+      "primary_node": "HUB_MULE",
+      "amount_involved": 690633.6,
+      "contributing_signals": {
+        "in_degree": 7,
+        "num_sources": 7,
+        "total_inflow": 690633.6
+      }
+    },
+    "structural_score": 35,
+    "innocence_discount_pct": 0.0,
+    "final_score": 35.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.952525",
+    "status": "open"
+  },
+  {
+    "alert_id": "cfdc4604-7a61-4d95-8597-e15d77dcf6f7",
+    "flagged_subgraph": {
+      "pattern_type": "fan_in",
+      "node_ids": [
+        "ACC00009",
+        "ACC00007",
+        "ACC00015",
+        "ACC00050",
+        "ACC00026",
+        "ACC00030",
+        "ACC00017"
+      ],
+      "edge_ids": [
+        "631a7ac0-1e08-4976-aac0-cee6c38c3e37",
+        "da43ee83-a5f6-4097-b048-0f140d789a62",
+        "14fe73af-ff0c-423c-a375-d1f865c7e283",
+        "d0c319cf-a5a4-44cf-8b86-d724ccc64f90",
+        "63c5cf02-c30b-4515-a81d-a1978524c573",
+        "15fb99aa-39de-446c-bca9-93ccf14a9c27",
+        "a31abc12-3f25-4fc1-b85a-72577a8a7b4f"
+      ],
+      "primary_node": "ACC00009",
+      "amount_involved": 85221.56,
+      "contributing_signals": {
+        "in_degree": 7,
+        "num_sources": 6,
+        "total_inflow": 85221.56
+      }
+    },
+    "structural_score": 35,
+    "innocence_discount_pct": 0.0,
+    "final_score": 35.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.952661",
+    "status": "open"
+  },
+  {
+    "alert_id": "a3246b41-f936-476b-9ec8-b17c23e9ca9c",
+    "flagged_subgraph": {
+      "pattern_type": "hub_spoke",
+      "node_ids": [
+        "ACC00041",
+        "ACC00028",
+        "ACC00046",
+        "ACC00020",
+        "ACC00018",
+        "ACC00039",
+        "ACC00008"
+      ],
+      "edge_ids": [
+        "d0b6a1f4-2551-4ecc-9dbc-4156d37ed657",
+        "fd7d7255-2928-46dc-a7d6-21c77b041dd8",
+        "9bc5306a-e53d-4af5-9bc5-7982650a5a3f",
+        "b40c3787-d0e2-4372-ace1-45f5655fdaf3",
+        "751fd7b4-c3fb-49fa-b343-41407dc2e584",
+        "e0b979f2-b49c-48c4-9002-f958460f3fdb",
+        "f66f09bf-6c10-4586-af1b-205af1716398"
+      ],
+      "primary_node": "ACC00041",
+      "amount_involved": 98206.43,
+      "contributing_signals": {
+        "in_degree": 3,
+        "out_degree": 4,
+        "in_amount": 36138.76,
+        "out_amount": 62067.67
+      }
+    },
+    "structural_score": 38,
+    "innocence_discount_pct": 0.0,
+    "final_score": 38.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.952809",
+    "status": "open"
+  },
+  {
+    "alert_id": "ae7f6d5e-52ef-41cf-b05f-a54c0d6fb9dc",
+    "flagged_subgraph": {
+      "pattern_type": "hub_spoke",
+      "node_ids": [
+        "ACC00040",
+        "ACC00018",
+        "ACC00037",
+        "ACC00039",
+        "ACC00021",
+        "ACC00022",
+        "ACC00010",
+        "ACC00024",
+        "ACC00048"
+      ],
+      "edge_ids": [
+        "411fe210-8ce5-462f-8389-88e5acb58e1d",
+        "6badcde0-a53e-4f88-a007-5760628ea61e",
+        "f742b16a-d285-4a50-9568-5a05526862c6",
+        "78099b35-3b27-4432-84a7-b6eef0149592",
+        "4e770561-c4d0-4ee6-bd18-125c606fe40d",
+        "4a1674c6-bbbd-4e7a-9e28-9f784f5e3630",
+        "c54b9ab5-9da6-41d5-8e8c-7cd9be375fee",
+        "18314c09-2e95-48d1-8699-5c9fca1b8ba0",
+        "bebf2b8e-5faf-4e61-b324-06c2fd73d75b"
+      ],
+      "primary_node": "ACC00040",
+      "amount_involved": 92748.72,
+      "contributing_signals": {
+        "in_degree": 4,
+        "out_degree": 5,
+        "in_amount": 46295.32,
+        "out_amount": 46453.399999999994
+      }
+    },
+    "structural_score": 38,
+    "innocence_discount_pct": 0.0,
+    "final_score": 38.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.952953",
+    "status": "open"
+  },
+  {
+    "alert_id": "1e7ec859-2293-4cf2-87b4-ca1badcf3d6b",
+    "flagged_subgraph": {
+      "pattern_type": "hub_spoke",
+      "node_ids": [
+        "ACC00017",
+        "ACC00039",
+        "ACC00032",
+        "ACC00011",
+        "ACC00034",
+        "ACC00006",
+        "ACC00014",
+        "ACC00003",
+        "ACC00009",
+        "ACC00025"
+      ],
+      "edge_ids": [
+        "ae4a3307-4fac-477e-9d1f-f698188f02f5",
+        "6ebf95b9-9e4f-4c00-ae9d-ff09a250d494",
+        "48be8c2b-9daf-4ee3-aa6f-25b5af25abbd",
+        "dbc896b5-8100-411b-abea-aeb88ee4df0d",
+        "75206ddb-7247-4663-925a-9bc9ed1ceb6a",
+        "ba00f174-a5a3-4688-bca4-505a1ef6cb3e",
+        "b42f550d-df47-4103-a9a7-24f0aa7c09fd",
+        "a31abc12-3f25-4fc1-b85a-72577a8a7b4f",
+        "68f23a38-5eba-4515-80ff-3795f41cd60c"
+      ],
+      "primary_node": "ACC00017",
+      "amount_involved": 144216.36,
+      "contributing_signals": {
+        "in_degree": 4,
+        "out_degree": 5,
+        "in_amount": 81069.21,
+        "out_amount": 63147.149999999994
+      }
+    },
+    "structural_score": 38,
+    "innocence_discount_pct": 0.0,
+    "final_score": 38.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.953094",
+    "status": "open"
+  },
+  {
+    "alert_id": "270270a5-d9d5-4952-bd63-fe26f95ad1b6",
+    "flagged_subgraph": {
+      "pattern_type": "hub_spoke",
+      "node_ids": [
+        "ACC00042",
+        "ACC00050",
+        "ACC00031",
+        "ACC00034",
+        "ACC00044",
+        "ACC00022",
+        "ACC00007",
+        "ACC00045",
+        "ACC00028"
+      ],
+      "edge_ids": [
+        "3aae6c85-ac39-4b74-bdc8-c9bcc6a78a0e",
+        "2fc51500-9735-4209-ba05-81f59cce3f2a",
+        "d8188872-a6a6-4cad-a490-715c89171af7",
+        "54db52a9-dc90-4101-a08c-082596d7545a",
+        "2d435d2f-f608-4311-8b0f-47f2de18caeb",
+        "cf3c709f-8d9b-4d7a-9bfc-d2d10606e320",
+        "f4b01d2d-c379-406a-ae6e-cdabdbc34b1c",
+        "65ab9621-0927-4cbc-a5e0-a577b1493919"
+      ],
+      "primary_node": "ACC00042",
+      "amount_involved": 63669.34000000001,
+      "contributing_signals": {
+        "in_degree": 4,
+        "out_degree": 4,
+        "in_amount": 41575.600000000006,
+        "out_amount": 22093.74
+      }
+    },
+    "structural_score": 38,
+    "innocence_discount_pct": 0.0,
+    "final_score": 38.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.953255",
+    "status": "open"
+  },
+  {
+    "alert_id": "ddf9d896-38a7-44d5-906f-5c25a14cfbab",
+    "flagged_subgraph": {
+      "pattern_type": "hub_spoke",
+      "node_ids": [
+        "ACC00020",
+        "ACC00029",
+        "ACC00044",
+        "ACC00018",
+        "ACC00033",
+        "ACC00016",
+        "ACC00037",
+        "ACC00041"
+      ],
+      "edge_ids": [
+        "06f2b3fb-04df-46c9-a676-12ccc3088496",
+        "f1bbf8ef-43aa-486d-8e57-e657215bcc26",
+        "76648f0d-650e-4189-8adf-9a37dc6e921c",
+        "497d3488-23f5-405a-ac77-f7cd11af4a40",
+        "9863bd2e-9ffd-484a-835f-ceeb0eacd988",
+        "335aebc4-366b-4831-83ac-cb6ed40f3286",
+        "9bc5306a-e53d-4af5-9bc5-7982650a5a3f"
+      ],
+      "primary_node": "ACC00020",
+      "amount_involved": 84904.94,
+      "contributing_signals": {
+        "in_degree": 4,
+        "out_degree": 3,
+        "in_amount": 52074.5,
+        "out_amount": 32830.44
+      }
+    },
+    "structural_score": 38,
+    "innocence_discount_pct": 0.0,
+    "final_score": 38.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.953390",
+    "status": "open"
+  },
+  {
+    "alert_id": "76f3f529-9289-4601-ba64-a2a08fa1e846",
+    "flagged_subgraph": {
+      "pattern_type": "hub_spoke",
+      "node_ids": [
+        "ACC00047",
+        "ACC00044",
+        "ACC00006",
+        "ACC00016",
+        "ACC00027",
+        "ACC00033"
+      ],
+      "edge_ids": [
+        "94fc339d-e7ee-44bd-9edd-bc77ff84c7dc",
+        "1cc59dda-ba18-4eb9-88c9-59785db6ad40",
+        "87bca894-820e-4948-a27f-1a0a4ec396aa",
+        "e59769ae-1168-464e-886b-b9332a22a357",
+        "7e96667c-f504-4d31-9147-bc277b1cb0b1",
+        "0429dc70-6288-46ed-9a73-d2375f1bbc31"
+      ],
+      "primary_node": "ACC00047",
+      "amount_involved": 68868.63,
+      "contributing_signals": {
+        "in_degree": 3,
+        "out_degree": 3,
+        "in_amount": 39979.32000000001,
+        "out_amount": 28889.309999999998
+      }
+    },
+    "structural_score": 38,
+    "innocence_discount_pct": 0.0,
+    "final_score": 38.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.953528",
+    "status": "open"
+  },
+  {
+    "alert_id": "58dc9318-2c75-44e0-8e41-dd349251ea42",
+    "flagged_subgraph": {
+      "pattern_type": "hub_spoke",
+      "node_ids": [
+        "ACC00004",
+        "ACC00005",
+        "ACC00011",
+        "ACC00044",
+        "ACC00038",
+        "ACC00014"
+      ],
+      "edge_ids": [
+        "ce6f27a8-b23b-4d3f-bda2-d8b59632b18c",
+        "1005341e-6fc7-47b2-96fb-c75f8cf846b9",
+        "958472dc-e30e-481e-a13c-83f61da939ec",
+        "4ac82ecf-70af-4c83-abf6-c9606aab8787",
+        "931e65f5-57cf-4e81-b535-7dbe9e9831f1",
+        "54671d6c-8372-418e-8698-223071423609"
+      ],
+      "primary_node": "ACC00004",
+      "amount_involved": 85772.29,
+      "contributing_signals": {
+        "in_degree": 3,
+        "out_degree": 3,
+        "in_amount": 33682.28999999999,
+        "out_amount": 52090.0
+      }
+    },
+    "structural_score": 38,
+    "innocence_discount_pct": 0.0,
+    "final_score": 38.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.953661",
+    "status": "open"
+  },
+  {
+    "alert_id": "ebdb6909-2c11-44b8-9b89-82eb0d0142ba",
+    "flagged_subgraph": {
+      "pattern_type": "hub_spoke",
+      "node_ids": [
+        "ACC00022",
+        "ACC00040",
+        "ACC00042",
+        "ACC00025",
+        "ACC00018",
+        "ACC00012",
+        "ACC00014",
+        "ACC00027",
+        "ACC00005"
+      ],
+      "edge_ids": [
+        "4a1674c6-bbbd-4e7a-9e28-9f784f5e3630",
+        "2d435d2f-f608-4311-8b0f-47f2de18caeb",
+        "f52c6c4e-5574-4b45-ba18-64393e46fbe4",
+        "30b32fc1-429e-4815-9dd5-86ed355b6fe2",
+        "9d03382d-cd00-41aa-b1e5-718f5638b407",
+        "79ccbca6-99b6-4c17-bbdd-ab6ee0c2a123",
+        "2e7d442b-48f1-44c0-bb12-4fdf520f32cc",
+        "0e153059-84ca-4722-92a4-91b977ba96a9",
+        "9ac89223-dc64-4c01-917d-c39c8c1fe8c2",
+        "9b2c19fc-a79c-43f7-8a46-15c31c1682b8"
+      ],
+      "primary_node": "ACC00022",
+      "amount_involved": 129789.92,
+      "contributing_signals": {
+        "in_degree": 4,
+        "out_degree": 6,
+        "in_amount": 30270.940000000002,
+        "out_amount": 99518.98
+      }
+    },
+    "structural_score": 38,
+    "innocence_discount_pct": 0.0,
+    "final_score": 38.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.953797",
+    "status": "open"
+  },
+  {
+    "alert_id": "ca9adc80-a35e-4e8a-b9e0-d30a026afc01",
+    "flagged_subgraph": {
+      "pattern_type": "hub_spoke",
+      "node_ids": [
+        "ACC00015",
+        "ACC00023",
+        "ACC00010",
+        "ACC00043",
+        "ACC00035",
+        "ACC00002",
+        "ACC00019",
+        "ACC00009",
+        "ACC00032",
+        "ACC00003",
+        "ACC00033",
+        "ACC00013"
+      ],
+      "edge_ids": [
+        "3a919fd1-7f6f-4317-9436-069fb73f4392",
+        "a756c27c-ef2c-4a98-9aa7-55d68b9d22a6",
+        "0a8cd8d7-a3a6-404d-9659-f04dc33416e3",
+        "bbb31068-ba35-4ad7-bc76-ceeb500e6324",
+        "d2b84ede-faf5-473d-8034-b7a058019cc3",
+        "c4ff6d10-7a21-4423-b7b3-2d9da87d0a37",
+        "da43ee83-a5f6-4097-b048-0f140d789a62",
+        "86994ce6-0a12-44a4-89c0-ad7093130d46",
+        "531c5d21-7860-4250-a9e6-3731e34209c6",
+        "28b0401f-5167-4958-8206-20e7147a9daf",
+        "6fd5582a-c1c7-4a54-b4bf-719efabe9e8e"
+      ],
+      "primary_node": "ACC00015",
+      "amount_involved": 173563.3,
+      "contributing_signals": {
+        "in_degree": 4,
+        "out_degree": 7,
+        "in_amount": 62893.17999999999,
+        "out_amount": 110670.12
+      }
+    },
+    "structural_score": 38,
+    "innocence_discount_pct": 0.0,
+    "final_score": 38.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.953937",
+    "status": "open"
+  },
+  {
+    "alert_id": "e23b78d9-fdbd-4893-945a-4a7ab39c5f8f",
+    "flagged_subgraph": {
+      "pattern_type": "hub_spoke",
+      "node_ids": [
+        "ACC00037",
+        "ACC00020",
+        "ACC00018",
+        "ACC00014",
+        "ACC00008",
+        "ACC00040",
+        "ACC00031",
+        "ACC00038",
+        "ACC00019"
+      ],
+      "edge_ids": [
+        "335aebc4-366b-4831-83ac-cb6ed40f3286",
+        "4132197f-4768-4b8d-accd-354e9ff28c56",
+        "f6d3475e-14d8-4cc9-8823-8d62b0d97b1a",
+        "bbefbc09-f816-4f5e-ae45-2588cd3cdcd5",
+        "6badcde0-a53e-4f88-a007-5760628ea61e",
+        "f742b16a-d285-4a50-9568-5a05526862c6",
+        "c0b30fbb-b8c8-49cb-962e-e1de2bc0ca45",
+        "d7f34b37-8230-46bf-b527-5968b6b6b84b",
+        "522060d6-9fbe-4a6a-b4be-e5fae8b0f957",
+        "e033804c-f011-4a1c-ae46-a834d51f7d72"
+      ],
+      "primary_node": "ACC00037",
+      "amount_involved": 121997.23000000001,
+      "contributing_signals": {
+        "in_degree": 4,
+        "out_degree": 6,
+        "in_amount": 48163.880000000005,
+        "out_amount": 73833.35
+      }
+    },
+    "structural_score": 38,
+    "innocence_discount_pct": 0.0,
+    "final_score": 38.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.954079",
+    "status": "open"
+  },
+  {
+    "alert_id": "664bc336-8290-474c-aa05-9bd52a02f719",
+    "flagged_subgraph": {
+      "pattern_type": "hub_spoke",
+      "node_ids": [
+        "ACC00030",
+        "ACC00011",
+        "ACC00034",
+        "ACC00027",
+        "ACC00001",
+        "ACC00009",
+        "ACC00008",
+        "ACC00028"
+      ],
+      "edge_ids": [
+        "b748e921-11f8-445f-82bf-fb89a8df1957",
+        "1d4b2ba1-a431-4019-a1eb-780530f10bb8",
+        "3bbbe46d-f4c6-43f5-a2ef-80edb51c834e",
+        "dff83820-895e-4f1d-a7fb-c6fab6581865",
+        "15fb99aa-39de-446c-bca9-93ccf14a9c27",
+        "f185ff56-4762-4dde-b485-a7a00cbc6c06",
+        "99a06ed8-33b2-41c4-97b1-ea7f48c4723c",
+        "eed56b0d-275b-4453-9493-35c65e5e5972"
+      ],
+      "primary_node": "ACC00030",
+      "amount_involved": 150761.85,
+      "contributing_signals": {
+        "in_degree": 3,
+        "out_degree": 5,
+        "in_amount": 47006.32,
+        "out_amount": 103755.53
+      }
+    },
+    "structural_score": 38,
+    "innocence_discount_pct": 0.0,
+    "final_score": 38.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.954232",
+    "status": "open"
+  },
+  {
+    "alert_id": "f8f047e1-808f-4152-a88d-947bc9da0656",
+    "flagged_subgraph": {
+      "pattern_type": "hub_spoke",
+      "node_ids": [
+        "ACC00045",
+        "ACC00042",
+        "ACC00011",
+        "ACC00005",
+        "ACC00025",
+        "ACC00036",
+        "ACC00001",
+        "ACC00026",
+        "ACC00002"
+      ],
+      "edge_ids": [
+        "f4b01d2d-c379-406a-ae6e-cdabdbc34b1c",
+        "a517425f-cde0-4c8b-87d4-db415da26fc6",
+        "c8dc0c1c-c9f7-45e6-90e5-c0fc4ac9f769",
+        "647ae729-8ecb-479e-a5e9-dcc26efb9da0",
+        "906c37b2-8d0c-4fc3-ba14-b02a209fa769",
+        "898ed472-025c-437c-8c97-ef0498665c5a",
+        "fe7b1e48-947f-470b-8547-113daa85c117",
+        "421541ab-bc90-4c59-9393-6cc8b2b1158f"
+      ],
+      "primary_node": "ACC00045",
+      "amount_involved": 127112.63999999998,
+      "contributing_signals": {
+        "in_degree": 3,
+        "out_degree": 5,
+        "in_amount": 40367.19,
+        "out_amount": 86745.44999999998
+      }
+    },
+    "structural_score": 38,
+    "innocence_discount_pct": 0.0,
+    "final_score": 38.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.954366",
+    "status": "open"
+  },
+  {
+    "alert_id": "8703985c-1e10-419e-8754-5c74aea1f4aa",
+    "flagged_subgraph": {
+      "pattern_type": "hub_spoke",
+      "node_ids": [
+        "ACC00026",
+        "ACC00045",
+        "ACC00032",
+        "ACC00002",
+        "ACC00009",
+        "ACC00043",
+        "ACC00036"
+      ],
+      "edge_ids": [
+        "fe7b1e48-947f-470b-8547-113daa85c117",
+        "b6dbe367-cfef-455c-89ff-6c03cbafb68d",
+        "cc685159-c6d6-40d4-bce6-035848782db7",
+        "63c5cf02-c30b-4515-a81d-a1978524c573",
+        "699f0120-5635-4de4-b264-d54975eaaa73",
+        "f739bf7b-4c3c-4061-90f8-8986401d0453"
+      ],
+      "primary_node": "ACC00026",
+      "amount_involved": 115789.1,
+      "contributing_signals": {
+        "in_degree": 3,
+        "out_degree": 3,
+        "in_amount": 61062.060000000005,
+        "out_amount": 54727.04
+      }
+    },
+    "structural_score": 38,
+    "innocence_discount_pct": 0.0,
+    "final_score": 38.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.954498",
+    "status": "open"
+  },
+  {
+    "alert_id": "34f9cf29-61cb-41c8-b352-f1bc714daf02",
+    "flagged_subgraph": {
+      "pattern_type": "pass_through",
+      "node_ids": [
+        "CYC_A",
+        "CYC_D",
+        "CYC_B"
+      ],
+      "edge_ids": [
+        "b6dcf811-794c-45b9-962c-94b01f4a26e1",
+        "5a723de6-2e79-412b-b4ca-14105529f1ab"
+      ],
+      "primary_node": "CYC_A",
+      "amount_involved": 163000.0,
+      "contributing_signals": {
+        "in_out_ratio": 0.85,
+        "in_amount": 88000.0,
+        "out_amount": 75000.0
+      }
+    },
+    "structural_score": 18,
+    "innocence_discount_pct": 0.0,
+    "final_score": 18.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.954627",
+    "status": "open"
+  },
+  {
+    "alert_id": "72069933-ab94-49cb-95ff-4947421f5cec",
+    "flagged_subgraph": {
+      "pattern_type": "pass_through",
+      "node_ids": [
+        "CYC_B",
+        "CYC_A",
+        "CYC_C"
+      ],
+      "edge_ids": [
+        "5a723de6-2e79-412b-b4ca-14105529f1ab",
+        "1aef463d-387a-47d7-9d9d-1a142b1c179b"
+      ],
+      "primary_node": "CYC_B",
+      "amount_involved": 157000.0,
+      "contributing_signals": {
+        "in_out_ratio": 0.91,
+        "in_amount": 75000.0,
+        "out_amount": 82000.0
+      }
+    },
+    "structural_score": 18,
+    "innocence_discount_pct": 0.0,
+    "final_score": 18.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.954768",
+    "status": "open"
+  },
+  {
+    "alert_id": "f4528fdc-a7a0-4473-bc61-bd5e50da16a8",
+    "flagged_subgraph": {
+      "pattern_type": "pass_through",
+      "node_ids": [
+        "ACC00024",
+        "ACC00040",
+        "ACC00011",
+        "ACC00003",
+        "ACC00028"
+      ],
+      "edge_ids": [
+        "18314c09-2e95-48d1-8699-5c9fca1b8ba0",
+        "2abc7cbf-7e17-4511-b344-4e67eb0baf94",
+        "f0ee53a8-f451-47c1-bfae-e8dfdc2eb5c3",
+        "327d3eea-43c5-4065-b3ed-5a1c97e70e6a"
+      ],
+      "primary_node": "ACC00024",
+      "amount_involved": 49636.509999999995,
+      "contributing_signals": {
+        "in_out_ratio": 0.97,
+        "in_amount": 24382.95,
+        "out_amount": 25253.559999999998
+      }
+    },
+    "structural_score": 33,
+    "innocence_discount_pct": 0.0,
+    "final_score": 33.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.954775",
+    "status": "open"
+  },
+  {
+    "alert_id": "2c9f2fc9-afb6-42e9-a84e-9ab3d2aac7d5",
+    "flagged_subgraph": {
+      "pattern_type": "pass_through",
+      "node_ids": [
+        "CYC_D",
+        "CYC_C",
+        "CYC_A"
+      ],
+      "edge_ids": [
+        "1280b16f-a1c0-41dc-8d52-4a0dd0e36d5d",
+        "b6dcf811-794c-45b9-962c-94b01f4a26e1"
+      ],
+      "primary_node": "CYC_D",
+      "amount_involved": 179000.0,
+      "contributing_signals": {
+        "in_out_ratio": 0.97,
+        "in_amount": 91000.0,
+        "out_amount": 88000.0
+      }
+    },
+    "structural_score": 18,
+    "innocence_discount_pct": 0.0,
+    "final_score": 18.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.954906",
+    "status": "open"
+  },
+  {
+    "alert_id": "211bd372-a6ff-4315-a90f-e5960587f9df",
+    "flagged_subgraph": {
+      "pattern_type": "pass_through",
+      "node_ids": [
+        "CYC_C",
+        "CYC_B",
+        "CYC_D"
+      ],
+      "edge_ids": [
+        "1aef463d-387a-47d7-9d9d-1a142b1c179b",
+        "1280b16f-a1c0-41dc-8d52-4a0dd0e36d5d"
+      ],
+      "primary_node": "CYC_C",
+      "amount_involved": 173000.0,
+      "contributing_signals": {
+        "in_out_ratio": 0.9,
+        "in_amount": 82000.0,
+        "out_amount": 91000.0
+      }
+    },
+    "structural_score": 18,
+    "innocence_discount_pct": 0.0,
+    "final_score": 18.0,
+    "risk_band": "monitor",
+    "disposition": "monitor",
+    "innocence_signals": [],
+    "first_detected": "2026-03-14T00:21:11.955040",
+    "status": "open"
+  }
+]

@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+eggs/
+*.egg
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Environment
+.env
+.env.local
+*.env
+
+# Cache
+.cache/
+.mypy_cache/
+.ruff_cache/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Demo cache (rebuild included)
+demo_cache/
+
+# Data (mount externally)
+data/

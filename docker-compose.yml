@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  graphsentinel:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "8000:8000"
+    environment:
+      - DEMO_MODE=${DEMO_MODE:-1}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
+      - DEMO_CACHE_NAME=demo_track_a
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - ./backend/demo_cache:/app/demo_cache:ro
+      - ./backend/data:/app/data:ro
+      - graphsentinel_logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    networks:
+      - frontend
+
+  # Development service
+  graphsentinel-dev:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "8000:8000"
+      - "5678:5678"  # Debug port
+    environment:
+      - DEMO_MODE=1
+      - ALLOWED_ORIGINS=*
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./backend:/app
+      - ./backend/demo_cache:/app/demo_cache
+      - ./backend/data:/app/data
+      - graphsentinel_logs:/app/logs
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    profiles:
+      - dev
+    networks:
+      - frontend
+
+volumes:
+  graphsentinel_logs:
+
+networks:
+  frontend:
+    driver: bridge
+    name: graphsentinel_frontend

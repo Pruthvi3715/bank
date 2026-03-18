@@ -1,0 +1,62 @@
+{
+  "alerts": [
+    {
+      "alert_id": "track-a-demo-1",
+      "timestamp": "2026-03-15T10:00:00",
+      "subgraph_nodes": ["ACC_0042", "ACC_0089", "ACC_0156", "ACC_0042"],
+      "subgraph_edges": ["ACC_0042->ACC_0089", "ACC_0089->ACC_0156", "ACC_0156->ACC_0042"],
+      "risk_score": 78.0,
+      "pattern_type": "Cycle",
+      "structural_score": 85.0,
+      "innocence_discount": 7.0,
+      "disposition": "Immediate Review",
+      "channels": ["NEFT", "RTGS"],
+      "scoring_signals": {"cycle": 40, "velocity": 20},
+      "llm_explanation": "Pre-cached Track A: Directed cycle detected. Funds flow ACC_0042 → ACC_0089 → ACC_0156 → back to ACC_0042 within 4 hours, consistent with round-tripping layering. Recommend immediate review."
+    },
+    {
+      "alert_id": "track-a-demo-2",
+      "timestamp": "2026-03-15T10:00:00",
+      "subgraph_nodes": ["ACC_0123"],
+      "subgraph_edges": ["S1->ACC_0123", "S2->ACC_0123"],
+      "risk_score": 65.0,
+      "pattern_type": "Smurfing",
+      "structural_score": 70.0,
+      "innocence_discount": 5.0,
+      "disposition": "Immediate Review",
+      "channels": ["IMPS"],
+      "scoring_signals": {"fan_in": 35, "near_threshold": 15},
+      "llm_explanation": "Pre-cached Track A: High fan-in pattern. Multiple sources transfer amounts just below ₹50,000 to ACC_0123 within 72 hours, consistent with structuring to avoid CTR. Recommend review."
+    }
+  ],
+  "graph": {
+    "nodes": [
+      {"id": "ACC_0042"}, {"id": "ACC_0089"}, {"id": "ACC_0156"}, {"id": "ACC_0123"},
+      {"id": "S1"}, {"id": "S2"}
+    ],
+    "links": [
+      {"source": "ACC_0042", "target": "ACC_0089", "amount": 98000, "channel": "NEFT"},
+      {"source": "ACC_0089", "target": "ACC_0156", "amount": 97500, "channel": "RTGS"},
+      {"source": "ACC_0156", "target": "ACC_0042", "amount": 97000, "channel": "NEFT"},
+      {"source": "S1", "target": "ACC_0123", "amount": 48500, "channel": "IMPS"},
+      {"source": "S2", "target": "ACC_0123", "amount": 47200, "channel": "IMPS"}
+    ]
+  },
+  "stats": {
+    "total_txns": 500,
+    "total_nodes": 6,
+    "total_edges": 5,
+    "alerts_generated": 2,
+    "pattern_counts": {"Cycle": 1, "Smurfing": 1}
+  },
+  "agent_activity": [
+    {"agent": "Data", "message": "Track A (Guaranteed): Pre-cached 500-transaction scenario loaded."},
+    {"agent": "PreFilter", "message": "After pre-filter (amount >= 500): 500 transactions"},
+    {"agent": "Graph Agent", "message": "Ingesting batch: 6 nodes, 5 edges"},
+    {"agent": "Pathfinder Agent", "message": "Cycle detected — nodes ACC_0042 → ACC_0089 → ACC_0156 → ACC_0042"},
+    {"agent": "Pathfinder Agent", "message": "Smurfing (fan-in) target: ACC_0123"},
+    {"agent": "Scorer Agent", "message": "Risk Score computed for 2 flagged subgraphs"},
+    {"agent": "Report Agent", "message": "Alert Cycle: Score 78/100 — Immediate Review"},
+    {"agent": "Report Agent", "message": "Alert Smurfing: Score 65/100 — Immediate Review"}
+  ]
+}

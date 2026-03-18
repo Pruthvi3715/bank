@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pydantic
+networkx
+pandas
+pytest
+httpx
+python-dotenv
+openai
+python-multipart
