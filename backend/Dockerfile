@@ -33,6 +33,10 @@ RUN groupadd --gid 1001 --system graphsentinel && \
 
 WORKDIR /app
 
+# Copy installed Python packages from builder stage
+COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
 # Copy only required files from source
 COPY app/ ./app/
 COPY config/ ./config/
@@ -55,9 +59,9 @@ USER 1001:1001
 # Expose port
 EXPOSE 8000
 
-# Health check
+# Health check (use python instead of curl which is not installed)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:8000/api/health || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')" || exit 1
 
 # Start application
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]

@@ -1,7 +1,8 @@
-version: '3.8'
+version: '3.9'
 
 services:
-  graphsentinel:
+  # Backend API
+  backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -9,65 +10,134 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DEMO_MODE=${DEMO_MODE:-1}
-      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
-      - DEMO_CACHE_NAME=demo_track_a
+      - DEMO_MODE=${DEMO_MODE:-false}
+      - ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - LLM_MODEL=${LLM_MODEL:-anthropic/claude-sonnet-4-6}
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=graphsentinel123
+      - REDIS_URL=redis://redis:6379
+      - CHROMADB_URL=http://chromadb:8000
+      - REDPANDA_BROKERS=redpanda:9092
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-graphsentinel-dev-secret-change-in-production}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
     volumes:
       - ./backend/demo_cache:/app/demo_cache:ro
       - ./backend/data:/app/data:ro
-      - graphsentinel_logs:/app/logs
-    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+      chromadb:
+        condition: service_started
+      redpanda:
+        condition: service_started
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health/ready"]
-      interval: 30s
-      timeout: 10s
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 15s
+      timeout: 5s
       retries: 3
-      start_period: 15s
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 512M
-        reservations:
-          cpus: '0.5'
-          memory: 256M
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
+      start_period: 10s
+    restart: unless-stopped
     networks:
-      - frontend
+      - graphsentinel
 
-  # Development service
-  graphsentinel-dev:
+  # Frontend Dashboard
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - graphsentinel
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - graphsentinel
+
+  # Neo4j Graph Database
+  neo4j:
+    image: neo4j:5-community
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/graphsentinel123
+    volumes:
+      - neo4j_data:/data
+    restart: unless-stopped
+    networks:
+      - graphsentinel
+
+  # ChromaDB — Vector store for RAG knowledge base
+  chromadb:
+    image: ghcr.io/chroma-core/chroma:0.5.4
+    ports:
+      - "8001:8000"
+    volumes:
+      - chromadb_data:/chroma/chroma/.chroma_do_not_migrate
+    restart: unless-stopped
+    networks:
+      - graphsentinel
+
+  # Redpanda — Kafka-compatible streaming for real-time event pipeline
+  redpanda:
+    image: redpandadata/redpanda:v24.3.1
+    ports:
+      - "9092:9092"
+      - "8081:8081"
+      - "8082:8082"
+    command: [
+      "redpanda", "start",
+      "--kafka-addr", "internal://0.0.0.0:9092,external://0.0.0.0:19092",
+      "--rpc-addr", "0.0.0.0:33145",
+      "--advertise-rpc-addr", "redpanda:33145",
+      "--advertise-kafka-addr", "internal://redpanda:9092,external://localhost:19092",
+      "--smp", "1", "--memory", "1G",
+    ]
+    volumes:
+      - redpanda_data:/var/lib/redpanda/data
+    restart: unless-stopped
+    networks:
+      - graphsentinel
+
+  # Development service (use with: docker-compose --profile dev up)
+  backend-dev:
     build:
       context: ./backend
       dockerfile: Dockerfile
       target: development
     ports:
       - "8000:8000"
-      - "5678:5678"  # Debug port
     environment:
-      - DEMO_MODE=1
+      - DEMO_MODE=false
       - ALLOWED_ORIGINS=*
       - LOG_LEVEL=DEBUG
     volumes:
       - ./backend:/app
-      - ./backend/demo_cache:/app/demo_cache
-      - ./backend/data:/app/data
-      - graphsentinel_logs:/app/logs
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     profiles:
       - dev
     networks:
-      - frontend
+      - graphsentinel
 
 volumes:
-  graphsentinel_logs:
+  neo4j_data:
+  chromadb_data:
+  redpanda_data:
 
 networks:
-  frontend:
+  graphsentinel:
     driver: bridge
-    name: graphsentinel_frontend

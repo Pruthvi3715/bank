@@ -6,7 +6,7 @@ from typing import List, Dict, Any
 import networkx as nx
 
 # Allow importing the top-level config package regardless of working directory
-_config_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "config")
+_config_path = os.path.join(os.path.dirname(__file__), "..", "..", "config")
 if _config_path not in sys.path:
     sys.path.insert(0, os.path.abspath(_config_path))
 
@@ -235,4 +235,57 @@ class PathfinderAgent:
             "pass_through": self.detect_pass_through(),
             "dormant": self.detect_dormant_activation(),
             "temporal_layering": self.detect_temporal_layering(),
+            "centrality": self.compute_centrality(),
         }
+
+    # ------------------------------------------------------------------
+    # Graph Centrality Metrics
+    # ------------------------------------------------------------------
+    def compute_centrality(self) -> Dict[str, Dict[str, float]]:
+        """
+        Compute PageRank and Betweenness Centrality for all nodes.
+
+        PageRank: identifies nodes that receive a lot of "influence" from
+                  incoming edges — useful for finding high-volume aggregators.
+
+        Betweenness: identifies bridge nodes that lie on many shortest paths —
+                     useful for finding layering intermediaries.
+        """
+        if len(self.graph.nodes) == 0:
+            return {}
+
+        if len(self.graph.nodes) == 1:
+            node = list(self.graph.nodes)[0]
+            return {node: {"pagerank": 1.0, "betweenness": 0.0}}
+
+        simple = nx.DiGraph(self.graph)
+
+        try:
+            pagerank = nx.pagerank(simple, alpha=0.85, max_iter=100)
+        except Exception:
+            pagerank = {}
+
+        try:
+            betweenness = nx.betweenness_centrality(
+                simple, k=min(50, len(simple.nodes))
+            )
+        except Exception:
+            betweenness = {}
+
+        result = {}
+        for node in self.graph.nodes():
+            result[node] = {
+                "pagerank": pagerank.get(node, 0.0),
+                "betweenness": betweenness.get(node, 0.0),
+            }
+        return result
+
+    def top_central_nodes(self, n: int = 10) -> Dict[str, Dict[str, float]]:
+        """Return top N nodes by betweenness centrality (bridge nodes)."""
+        centrality = self.compute_centrality()
+        sorted_nodes = sorted(
+            centrality.items(),
+            key=lambda x: x[1].get("betweenness", 0),
+            reverse=True,
+        )
+        return dict(sorted_nodes[:n])

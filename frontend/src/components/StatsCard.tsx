@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 
 interface StatsCardProps {
@@ -9,49 +8,16 @@ interface StatsCardProps {
   value: string | number;
   subtitle?: string;
   icon: LucideIcon;
-  trend?: "up" | "down" | "neutral";
-  trendValue?: string;
-  color?: "blue" | "cyan" | "green" | "red" | "purple" | "amber";
+  color?: "amber" | "emerald" | "red" | "cyan" | "orange";
   delay?: number;
 }
 
-const colorMap = {
-  blue: {
-    bg: "bg-blue-500/10",
-    border: "border-blue-500/20",
-    icon: "text-blue-500",
-    glow: "shadow-blue-500/10",
-  },
-  cyan: {
-    bg: "bg-cyan-500/10",
-    border: "border-cyan-500/20",
-    icon: "text-cyan-500",
-    glow: "shadow-cyan-500/10",
-  },
-  green: {
-    bg: "bg-emerald-500/10",
-    border: "border-emerald-500/20",
-    icon: "text-emerald-500",
-    glow: "shadow-emerald-500/10",
-  },
-  red: {
-    bg: "bg-red-500/10",
-    border: "border-red-500/20",
-    icon: "text-red-500",
-    glow: "shadow-red-500/10",
-  },
-  purple: {
-    bg: "bg-purple-500/10",
-    border: "border-purple-500/20",
-    icon: "text-purple-500",
-    glow: "shadow-purple-500/10",
-  },
-  amber: {
-    bg: "bg-amber-500/10",
-    border: "border-amber-500/20",
-    icon: "text-amber-500",
-    glow: "shadow-amber-500/10",
-  },
+const colorMap: Record<string, { border: string; text: string; bg: string }> = {
+  amber: { border: "border-amber-500/30", text: "text-amber-500", bg: "bg-amber-500/8" },
+  emerald: { border: "border-emerald-500/30", text: "text-emerald-500", bg: "bg-emerald-500/8" },
+  red: { border: "border-red-500/30", text: "text-red-500", bg: "bg-red-500/8" },
+  cyan: { border: "border-cyan-500/30", text: "text-cyan-500", bg: "bg-cyan-500/8" },
+  orange: { border: "border-orange-500/30", text: "text-orange-500", bg: "bg-orange-500/8" },
 };
 
 export default function StatsCard({
@@ -59,61 +25,34 @@ export default function StatsCard({
   value,
   subtitle,
   icon: Icon,
-  trend,
-  trendValue,
-  color = "blue",
+  color = "amber",
   delay = 0,
 }: StatsCardProps) {
-  const colors = colorMap[color];
+  const c = colorMap[color] || colorMap.amber;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay }}
-      className={cn(
-        "relative overflow-hidden rounded-xl border bg-card p-4 transition-all duration-300 hover:shadow-lg",
-        colors.border,
-        colors.glow
-      )}
+      transition={{ duration: 0.25, delay }}
+      className={`border ${c.border} bg-card p-3 group hover:bg-secondary/50 transition-colors cursor-default`}
     >
-      <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            {title}
-          </p>
-          <p className="text-2xl font-bold tracking-tight">{value}</p>
-          {subtitle && (
-            <p className="text-xs text-muted-foreground">{subtitle}</p>
-          )}
-        </div>
-        <div className={cn("rounded-lg p-2.5", colors.bg)}>
-          <Icon className={cn("w-5 h-5", colors.icon)} />
+      <div className="flex items-start justify-between mb-2">
+        <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+          {title}
+        </span>
+        <div className={`p-1 ${c.bg}`}>
+          <Icon className={`w-3.5 h-3.5 ${c.text}`} />
         </div>
       </div>
-      {trendValue && (
-        <div className="mt-3 flex items-center gap-1">
-          <span
-            className={cn(
-              "text-xs font-medium",
-              trend === "up" && "text-emerald-500",
-              trend === "down" && "text-red-500",
-              trend === "neutral" && "text-muted-foreground"
-            )}
-          >
-            {trend === "up" && "↑"}
-            {trend === "down" && "↓"}
-            {trendValue}
-          </span>
-          <span className="text-xs text-muted-foreground">vs last run</span>
-        </div>
+      <div className={`text-2xl font-semibold tabular-nums ${c.text}`}>
+        {typeof value === "number" ? value.toLocaleString() : value}
+      </div>
+      {subtitle && (
+        <p className="text-[10px] text-muted-foreground mt-1 truncate font-mono">
+          {subtitle}
+        </p>
       )}
-      <div
-        className={cn(
-          "absolute -right-4 -top-4 h-24 w-24 rounded-full opacity-[0.04]",
-          colors.bg.replace("/10", "")
-        )}
-      />
     </motion.div>
   );
 }

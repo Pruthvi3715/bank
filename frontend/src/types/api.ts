@@ -19,10 +19,19 @@ export interface Alert {
   channels: string[];
   scoring_signals: Record<string, number>;
   llm_explanation?: string;
+  if_score?: number;
+  xgb_score?: number;
 }
 
 export interface GraphNode {
   id: string;
+  pagerank?: number;
+  betweenness?: number;
+  total_sent?: number;
+  total_received?: number;
+  channels?: string[];
+  if_score?: number;
+  xgb_score?: number;
 }
 
 export interface GraphLink {
@@ -30,6 +39,8 @@ export interface GraphLink {
   target: string | GraphNode;
   amount: number;
   channel: string;
+  color?: string;
+  timestamp?: string;
 }
 
 export interface GraphPayload {
@@ -55,4 +66,35 @@ export interface PipelineResponse {
   graph: GraphPayload;
   stats: PipelineStats;
   agent_activity?: AgentActivityStep[];
+  advanced_detection?: AdvancedDetection;
+  ml_info?: MLInfo;
+}
+
+export interface SARChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface QuickQuestion {
+  label: string;
+  prompt: string;
+}
+
+export interface AdvancedDetection {
+  tarjan_sccs: number;
+  fraud_rings: number;
+  centrality_top: {
+    pagerank: [string, number][];
+    betweenness: [string, number][];
+  };
+  dormant_motifs: number;
+  profile_mismatches: number;
+}
+
+export interface MLInfo {
+  feature_importance: Record<string, number>;
+  model_status: {
+    isolation_forest: string;
+    gradient_boosting: string;
+  };
 }

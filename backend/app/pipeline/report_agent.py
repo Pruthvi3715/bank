@@ -4,47 +4,18 @@ from typing import Dict, Any, List
 from pathlib import Path
 import json
 
+from app.privacy.token_vault import TokenVault, get_vault
+
 try:
     from openai import OpenAI  # type: ignore
 except ImportError:
     OpenAI = None
 
 
-class TokenVault:
-    """
-    Privacy layer: replaces real account IDs with role-scoped tokens before
-    sending data to the LLM, then reverses the mapping on the response.
-
-    Tokens are deterministic within a vault instance — the same account ID
-    always gets the same token so references in the narrative are coherent.
-    """
-
-    def __init__(self):
-        # role -> token  (built on first call, stable thereafter)
-        self._id_to_token: Dict[str, str] = {}
-        self._token_to_id: Dict[str, str] = {}
-
-    def tokenize(self, real_id: str, role: str) -> str:
-        if real_id in self._id_to_token:
-            return self._id_to_token[real_id]
-        # Deterministic: hash the real_id only (no time component)
-        digest = hashlib.sha256(real_id.encode()).hexdigest()[:8].upper()
-        token = f"{role}_{digest}"
-        self._id_to_token[real_id] = token
-        self._token_to_id[token] = real_id
-        return token
-
-    def detokenize(self, text: str) -> str:
-        for token, real_id in self._token_to_id.items():
-            text = text.replace(token, real_id)
-        return text
-
-
-# ------------------------------------------------------------------
-# Role assignment helpers
-# ------------------------------------------------------------------
 _ROLE_MAPS = {
-    "Cycle": lambda idx, is_first: "CYCLE_ORIGIN" if is_first else f"CYCLE_HOP_{idx:02d}",
+    "Cycle": lambda idx, is_first: "CYCLE_ORIGIN"
+    if is_first
+    else f"CYCLE_HOP_{idx:02d}",
     "Smurfing": lambda idx, _: f"STRUCTURING_SOURCE_{idx:02d}",
     "HubAndSpoke": lambda idx, is_first: "MULE_HUB" if is_first else f"SPOKE_{idx:02d}",
     "PassThrough": lambda idx, _: f"PASSTHROUGH_NODE_{idx:02d}",
@@ -98,8 +69,9 @@ class ReportAgent:
     ) -> str:
         """
         Returns the LLM narrative string.  Does not modify scored_subgraph.
+        Uses the shared session vault from app.privacy for consistent tokenization.
         """
-        vault = TokenVault()
+        vault = get_vault()
         pattern = scored_subgraph.get("pattern_type", "Unknown")
 
         # 1. Assign topology roles to each node
@@ -122,9 +94,16 @@ class ReportAgent:
                 }
             )
 
-        demo_mode = str(os.getenv("DEMO_MODE", "")).strip().lower() in {"1", "true", "yes", "on"}
+        demo_mode = str(os.getenv("DEMO_MODE", "")).strip().lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
         if demo_mode:
-            cache_dir = Path(__file__).resolve().parents[3] / "demo_cache" / "explanations"
+            cache_dir = (
+                Path(__file__).resolve().parents[3] / "demo_cache" / "explanations"
+            )
             cache_dir.mkdir(parents=True, exist_ok=True)
             key_payload = {
                 "pattern_type": pattern,
