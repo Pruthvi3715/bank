@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { authHeaders } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -54,7 +55,7 @@ export default function Dashboard() {
   const [isolatedAlert, setIsolatedAlert] = useState<Alert | null>(null);
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [demoTrack, setDemoTrack] = useState<"A" | "B">("B");
+  const [demoTrack, setDemoTrack] = useState<"A" | "B">("A");
   const [patternFilter, setPatternFilter] = useState<PatternType | "All">(
     "All"
   );
@@ -73,7 +74,7 @@ export default function Dashboard() {
     try {
       const res = await fetch(`${API_BASE}/api/sar-chat`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify({
           alert_id: selectedAlert.alert_id,
           message,
@@ -115,6 +116,7 @@ export default function Dashboard() {
           : `${API_BASE}/api/run-pipeline`;
       const res = await fetch(url, {
         method: demoTrack === "A" ? "GET" : "POST",
+        headers: { ...authHeaders() },
       });
       const data = await handleResponse(res);
       setResults(data);
@@ -135,6 +137,7 @@ export default function Dashboard() {
       formData.append("file", csvFile);
       const res = await fetch(`${API_BASE}/api/run-pipeline-csv`, {
         method: "POST",
+        headers: { ...authHeaders() },
         body: formData,
       });
       const data = await handleResponse(res);

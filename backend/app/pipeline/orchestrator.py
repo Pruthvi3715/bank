@@ -21,9 +21,7 @@ from app.ml.anomaly_detector import AnomalyDetector
 _ALERT_THRESHOLD = 40.0
 
 
-def _get_edges_for_pair(
-    graph: nx.MultiDiGraph, u: str, v: str
-) -> List[Dict[str, Any]]:
+def _get_edges_for_pair(graph: nx.MultiDiGraph, u: str, v: str) -> List[Dict[str, Any]]:
     """Return all edge attribute dicts between u and v in the MultiDiGraph."""
     data = graph.get_edge_data(u, v)
     if data is None:
@@ -56,27 +54,49 @@ class DetectionOrchestrator:
         if transactions is None:
             raw_txns = generate_scenario()
             transactions = [TransactionBase(**t) for t in raw_txns]
-            activity.append({"agent": "Data", "message": f"Generated synthetic scenario: {len(transactions)} transactions"})
+            activity.append(
+                {
+                    "agent": "Data",
+                    "message": f"Generated synthetic scenario: {len(transactions)} transactions",
+                }
+            )
         else:
-            activity.append({"agent": "Data", "message": f"Loaded {len(transactions)} transactions from CSV"})
+            activity.append(
+                {
+                    "agent": "Data",
+                    "message": f"Loaded {len(transactions)} transactions from CSV",
+                }
+            )
 
         # Pre-filter: ignore micro-transactions (configurable via settings)
         try:
             import sys, os
+
             _cfg = os.path.join(os.path.dirname(__file__), "..", "..", "..", "config")
             if _cfg not in sys.path:
                 sys.path.insert(0, os.path.abspath(_cfg))
             import settings as cfg
+
             min_amount = cfg.PREFILTER_MIN_AMOUNT
         except Exception:
             min_amount = 500
         transactions = [t for t in transactions if t.amount >= min_amount]
-        activity.append({"agent": "PreFilter", "message": f"After pre-filter (amount >= {min_amount}): {len(transactions)} transactions"})
+        activity.append(
+            {
+                "agent": "PreFilter",
+                "message": f"After pre-filter (amount >= {min_amount}): {len(transactions)} transactions",
+            }
+        )
 
         # Build graph
         graph_agent = GraphAgent()
         graph = graph_agent.process_transactions(transactions)
-        activity.append({"agent": "Graph Agent", "message": f"Ingesting batch: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges"})
+        activity.append(
+            {
+                "agent": "Graph Agent",
+                "message": f"Ingesting batch: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges",
+            }
+        )
 
         # Detect patterns
         pathfinder = PathfinderAgent(graph)
@@ -85,21 +105,55 @@ class DetectionOrchestrator:
         # Log pathfinder findings
         for cycle in detections.get("cycles", [])[:5]:
             cycle_str = " → ".join(cycle) + f" → {cycle[0]}"
-            activity.append({"agent": "Pathfinder Agent", "message": f"Cycle detected — nodes {cycle_str}"})
+            activity.append(
+                {
+                    "agent": "Pathfinder Agent",
+                    "message": f"Cycle detected — nodes {cycle_str}",
+                }
+            )
         if detections.get("cycles") and len(detections["cycles"]) > 5:
-            activity.append({"agent": "Pathfinder Agent", "message": f"... and {len(detections['cycles']) - 5} more cycles"})
+            activity.append(
+                {
+                    "agent": "Pathfinder Agent",
+                    "message": f"... and {len(detections['cycles']) - 5} more cycles",
+                }
+            )
         for target in detections.get("smurfing_targets", [])[:3]:
-            activity.append({"agent": "Pathfinder Agent", "message": f"Smurfing (fan-in) target: {target}"})
-        if detections.get("smurfing_targets") and len(detections["smurfing_targets"]) > 3:
-            activity.append({"agent": "Pathfinder Agent", "message": f"... and {len(detections['smurfing_targets']) - 3} more smurfing targets"})
+            activity.append(
+                {
+                    "agent": "Pathfinder Agent",
+                    "message": f"Smurfing (fan-in) target: {target}",
+                }
+            )
+        if (
+            detections.get("smurfing_targets")
+            and len(detections["smurfing_targets"]) > 3
+        ):
+            activity.append(
+                {
+                    "agent": "Pathfinder Agent",
+                    "message": f"... and {len(detections['smurfing_targets']) - 3} more smurfing targets",
+                }
+            )
         for hub in detections.get("hubs", [])[:3]:
-            activity.append({"agent": "Pathfinder Agent", "message": f"Hub-and-spoke hub: {hub}"})
+            activity.append(
+                {"agent": "Pathfinder Agent", "message": f"Hub-and-spoke hub: {hub}"}
+            )
         for node in detections.get("pass_through", [])[:3]:
-            activity.append({"agent": "Pathfinder Agent", "message": f"Pass-through node: {node}"})
+            activity.append(
+                {"agent": "Pathfinder Agent", "message": f"Pass-through node: {node}"}
+            )
         for node in detections.get("dormant", [])[:3]:
-            activity.append({"agent": "Pathfinder Agent", "message": f"Dormant activation: {node}"})
+            activity.append(
+                {"agent": "Pathfinder Agent", "message": f"Dormant activation: {node}"}
+            )
         for path in detections.get("temporal_layering", [])[:2]:
-            activity.append({"agent": "Pathfinder Agent", "message": f"Temporal layering path ({len(path)} hops): {' → '.join(path[:5])}{'...' if len(path) > 5 else ''}"})
+            activity.append(
+                {
+                    "agent": "Pathfinder Agent",
+                    "message": f"Temporal layering path ({len(path)} hops): {' → '.join(path[:5])}{'...' if len(path) > 5 else ''}",
+                }
+            )
 
         # Advanced detection algorithms (Tarjan, Louvain, PageRank, etc.)
         advanced = AdvancedDetector(graph)
@@ -107,32 +161,69 @@ class DetectionOrchestrator:
 
         tarjan_sccs = advanced_results.get("tarjan_sccs", [])
         if tarjan_sccs:
-            activity.append({"agent": "Advanced Detector", "message": f"Tarjan SCC: {len(tarjan_sccs)} strongly-connected components"})
+            activity.append(
+                {
+                    "agent": "Advanced Detector",
+                    "message": f"Tarjan SCC: {len(tarjan_sccs)} strongly-connected components",
+                }
+            )
         fraud_rings = advanced_results.get("fraud_rings", [])
         if fraud_rings:
-            activity.append({"agent": "Advanced Detector", "message": f"Louvain: {len(fraud_rings)} dense fraud ring communities"})
+            activity.append(
+                {
+                    "agent": "Advanced Detector",
+                    "message": f"Louvain: {len(fraud_rings)} dense fraud ring communities",
+                }
+            )
         centrality = advanced_results.get("centrality", {})
         top_pr = centrality.get("top_pagerank", [])[:3]
         if top_pr:
-            activity.append({"agent": "Advanced Detector", "message": f"PageRank top nodes: {', '.join(n[0] for n in top_pr)}"})
+            activity.append(
+                {
+                    "agent": "Advanced Detector",
+                    "message": f"PageRank top nodes: {', '.join(n[0] for n in top_pr)}",
+                }
+            )
         top_bw = centrality.get("top_betweenness", [])[:3]
         if top_bw:
-            activity.append({"agent": "Advanced Detector", "message": f"Betweenness bridges: {', '.join(n[0] for n in top_bw)}"})
+            activity.append(
+                {
+                    "agent": "Advanced Detector",
+                    "message": f"Betweenness bridges: {', '.join(n[0] for n in top_bw)}",
+                }
+            )
         dormant_motifs = advanced_results.get("dormant_motifs", [])
         if dormant_motifs:
-            activity.append({"agent": "Advanced Detector", "message": f"Dormant motifs: {len(dormant_motifs)} early-warning activations"})
+            activity.append(
+                {
+                    "agent": "Advanced Detector",
+                    "message": f"Dormant motifs: {len(dormant_motifs)} early-warning activations",
+                }
+            )
         mismatches = advanced_results.get("profile_mismatches", [])
         if mismatches:
-            activity.append({"agent": "Advanced Detector", "message": f"Profile mismatches: {len(mismatches)} accounts exceed 3x income"})
+            activity.append(
+                {
+                    "agent": "Advanced Detector",
+                    "message": f"Profile mismatches: {len(mismatches)} accounts exceed 3x income",
+                }
+            )
 
         # ML scoring (Isolation Forest + Gradient Boosting)
         ml_detector = AnomalyDetector()
         ml_scores = ml_detector.score_all_nodes(graph, kyc_db=self.mock_kyc_db)
         feature_importance = ml_detector.get_feature_importance()
-        activity.append({"agent": "ML Detector", "message": f"IF + GB scored {len(ml_scores)} nodes"})
+        activity.append(
+            {
+                "agent": "ML Detector",
+                "message": f"IF + GB scored {len(ml_scores)} nodes",
+            }
+        )
         context_agent = ContextAgent(self.mock_kyc_db)
         scorer_config = get_scorer_config()
-        scorer_agent = ScorerAgent(context_agent, graph=graph, scorer_config=scorer_config)
+        scorer_agent = ScorerAgent(
+            context_agent, graph=graph, scorer_config=scorer_config
+        )
         report_agent = ReportAgent()
 
         alerts: List[AlertBase] = []
@@ -145,7 +236,11 @@ class DetectionOrchestrator:
                 edges.extend(_get_edges_for_pair(graph, u, v))
             score_data = scorer_agent.score_pattern("Cycle", cycle, edges=edges)
             if score_data["final_score"] >= _ALERT_THRESHOLD:
-                alerts.append(self._make_alert(score_data, cycle, edges, report_agent, ml_scores=ml_scores))
+                alerts.append(
+                    self._make_alert(
+                        score_data, cycle, edges, report_agent, ml_scores=ml_scores
+                    )
+                )
 
         # ---- Pattern 2: Smurfing ----
         seen_smurfing: set = set()
@@ -162,7 +257,14 @@ class DetectionOrchestrator:
             if score_data["final_score"] >= _ALERT_THRESHOLD:
                 edge_labels = [f"{s}->{target}" for s in senders]
                 alerts.append(
-                    self._make_alert(score_data, nodes, edges, report_agent, edge_labels, ml_scores=ml_scores)
+                    self._make_alert(
+                        score_data,
+                        nodes,
+                        edges,
+                        report_agent,
+                        edge_labels,
+                        ml_scores=ml_scores,
+                    )
                 )
 
         # ---- Pattern 3: Hub-and-Spoke ----
@@ -181,12 +283,18 @@ class DetectionOrchestrator:
                 edges.extend(_get_edges_for_pair(graph, hub, t))
             score_data = scorer_agent.score_pattern("HubAndSpoke", nodes, edges=edges)
             if score_data["final_score"] >= _ALERT_THRESHOLD:
-                edge_labels = (
-                    [f"{s}->{hub}" for s in spokes_in]
-                    + [f"{hub}->{t}" for t in spokes_out]
-                )
+                edge_labels = [f"{s}->{hub}" for s in spokes_in] + [
+                    f"{hub}->{t}" for t in spokes_out
+                ]
                 alerts.append(
-                    self._make_alert(score_data, nodes, edges, report_agent, edge_labels, ml_scores=ml_scores)
+                    self._make_alert(
+                        score_data,
+                        nodes,
+                        edges,
+                        report_agent,
+                        edge_labels,
+                        ml_scores=ml_scores,
+                    )
                 )
 
         # ---- Pattern 4: Pass-Through ----
@@ -205,12 +313,18 @@ class DetectionOrchestrator:
                 edges.extend(_get_edges_for_pair(graph, node, s))
             score_data = scorer_agent.score_pattern("PassThrough", nodes, edges=edges)
             if score_data["final_score"] >= _ALERT_THRESHOLD:
-                edge_labels = (
-                    [f"{p}->{node}" for p in preds]
-                    + [f"{node}->{s}" for s in succs]
-                )
+                edge_labels = [f"{p}->{node}" for p in preds] + [
+                    f"{node}->{s}" for s in succs
+                ]
                 alerts.append(
-                    self._make_alert(score_data, nodes, edges, report_agent, edge_labels, ml_scores=ml_scores)
+                    self._make_alert(
+                        score_data,
+                        nodes,
+                        edges,
+                        report_agent,
+                        edge_labels,
+                        ml_scores=ml_scores,
+                    )
                 )
 
         # ---- Pattern 5: Dormant Activation ----
@@ -231,12 +345,18 @@ class DetectionOrchestrator:
                 "DormantActivation", nodes, edges=edges
             )
             if score_data["final_score"] >= _ALERT_THRESHOLD:
-                edge_labels = (
-                    [f"{p}->{node}" for p in preds]
-                    + [f"{node}->{s}" for s in succs]
-                )
+                edge_labels = [f"{p}->{node}" for p in preds] + [
+                    f"{node}->{s}" for s in succs
+                ]
                 alerts.append(
-                    self._make_alert(score_data, nodes, edges, report_agent, edge_labels, ml_scores=ml_scores)
+                    self._make_alert(
+                        score_data,
+                        nodes,
+                        edges,
+                        report_agent,
+                        edge_labels,
+                        ml_scores=ml_scores,
+                    )
                 )
 
         # ---- Pattern 6: Temporal Layering ----
@@ -249,10 +369,19 @@ class DetectionOrchestrator:
                 u, v = path[i], path[i + 1]
                 edges.extend(_get_edges_for_pair(graph, u, v))
                 edge_labels.append(f"{u}->{v}")
-            score_data = scorer_agent.score_pattern("TemporalLayering", path, edges=edges)
+            score_data = scorer_agent.score_pattern(
+                "TemporalLayering", path, edges=edges
+            )
             if score_data["final_score"] >= _ALERT_THRESHOLD:
                 alerts.append(
-                    self._make_alert(score_data, path, edges, report_agent, edge_labels, ml_scores=ml_scores)
+                    self._make_alert(
+                        score_data,
+                        path,
+                        edges,
+                        report_agent,
+                        edge_labels,
+                        ml_scores=ml_scores,
+                    )
                 )
 
         # Deduplicate alerts with identical node sets
@@ -262,16 +391,35 @@ class DetectionOrchestrator:
         # Sort by risk score desc
         alerts.sort(key=lambda a: a.risk_score, reverse=True)
 
-        activity.append({"agent": "Scorer Agent", "message": f"Risk Score computed for {len(alerts)} flagged subgraphs"})
+        activity.append(
+            {
+                "agent": "Scorer Agent",
+                "message": f"Risk Score computed for {len(alerts)} flagged subgraphs",
+            }
+        )
         for a in alerts[:5]:
-            activity.append({"agent": "Report Agent", "message": f"Alert {a.pattern_type}: Score {a.risk_score:.0f}/100 — {a.disposition}"})
+            activity.append(
+                {
+                    "agent": "Report Agent",
+                    "message": f"Alert {a.pattern_type}: Score {a.risk_score:.0f}/100 — {a.disposition}",
+                }
+            )
         if len(alerts) > 5:
-            activity.append({"agent": "Report Agent", "message": f"... and {len(alerts) - 5} more alerts"})
+            activity.append(
+                {
+                    "agent": "Report Agent",
+                    "message": f"... and {len(alerts) - 5} more alerts",
+                }
+            )
 
         # Build visualization payload (with centrality + ML data)
         CHANNEL_COLORS = {
-            "UPI": "#378ADD", "NEFT": "#EF9F27", "RTGS": "#1D9E75",
-            "IMPS": "#7F77DD", "SWIFT": "#D85A30", "ATM": "#888780",
+            "UPI": "#378ADD",
+            "NEFT": "#EF9F27",
+            "RTGS": "#1D9E75",
+            "IMPS": "#7F77DD",
+            "SWIFT": "#D85A30",
+            "ATM": "#888780",
         }
         pagerank_data = centrality.get("pagerank", {})
         betweenness_data = centrality.get("betweenness", {})
@@ -294,13 +442,18 @@ class DetectionOrchestrator:
         edges_viz = []
         for u, v, d in graph.edges(data=True):
             channel = d.get("channel", "")
-            edges_viz.append({
-                "source": u, "target": v,
-                "amount": d.get("amount", 0),
-                "channel": channel,
-                "color": CHANNEL_COLORS.get(channel, "#888780"),
-                "timestamp": str(d.get("timestamp", "")) if d.get("timestamp") else None,
-            })
+            edges_viz.append(
+                {
+                    "source": u,
+                    "target": v,
+                    "amount": d.get("amount", 0),
+                    "channel": channel,
+                    "color": CHANNEL_COLORS.get(channel, "#888780"),
+                    "timestamp": str(d.get("timestamp", ""))
+                    if d.get("timestamp")
+                    else None,
+                }
+            )
 
         # Pattern summary
         pattern_counts: Dict[str, int] = {}
@@ -332,7 +485,7 @@ class DetectionOrchestrator:
                 "feature_importance": feature_importance,
                 "model_status": {
                     "isolation_forest": "trained",
-                    "gradient_boosting": "trained" if ml_detector.gb_model else "heuristic",
+                    "xgboost": "trained" if ml_detector.xgb_model else "heuristic",
                 },
             },
         }
@@ -351,8 +504,7 @@ class DetectionOrchestrator:
     ) -> AlertBase:
         if edge_labels is None:
             edge_labels = [
-                f"{e.get('sender_id', '?')}->{e.get('receiver_id', '?')}"
-                for e in edges
+                f"{e.get('sender_id', '?')}->{e.get('receiver_id', '?')}" for e in edges
             ]
         explanation = report_agent.generate_sar_draft(score_data, edges)
 

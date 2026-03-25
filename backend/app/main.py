@@ -111,7 +111,9 @@ async def broadcast_agent_event(agent: str, status: str, message: str, **extra):
 
 # ── CORS ───────────────────────────────────────────────────────────────────────
 allowed_origins_env = os.getenv(
-    "ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000"
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,http://localhost:3001,http://localhost:3002,"
+    "http://127.0.0.1:3000,http://127.0.0.1:3001,http://127.0.0.1:3002",
 )
 allowed_origins = [o.strip() for o in allowed_origins_env.split(",") if o.strip()]
 
@@ -134,7 +136,7 @@ def _is_demo_mode() -> bool:
 
 
 def _load_demo_cache(name: str = "demo_track_a") -> dict:
-    cache_dir = Path(__file__).resolve().parents[2] / "demo_cache"
+    cache_dir = Path(__file__).resolve().parents[1] / "demo_cache"
     path = cache_dir / f"{name}.json"
     if not path.exists():
         return {
@@ -343,7 +345,7 @@ async def stream_csv_to_kafka(
         for txn in transactions:
             await producer.send(
                 "graphsentinel.transactions.raw",
-                value=txn,
+                value=txn.model_dump(mode="json"),
             )
             sent += 1
     finally:
@@ -521,7 +523,7 @@ def get_node_detail(node_id: str):
 
 @app.get("/api/ml-info")
 def get_ml_info():
-    cached = get_cached_result()
+    cached = get_cached_result() or {}
     ml_info = cached.get("ml_info", {})
     if not ml_info:
         ml_info = {

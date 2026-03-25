@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { authHeaders } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Bug, Loader2, CheckCircle, XCircle, Zap, Clock, GitBranch } from "lucide-react";
@@ -66,7 +67,7 @@ export default function AdversarialTestPanel() {
         test === "all"
           ? `${API_BASE}/api/adversarial-test`
           : `${API_BASE}/api/adversarial-test?test=${test}`;
-      const res = await fetch(url);
+      const res = await fetch(url, { headers: { ...authHeaders() } });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setResult(await res.json());
     } catch (e) {

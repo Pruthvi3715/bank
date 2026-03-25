@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { authHeaders } from "@/lib/auth";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Download, FileText, AlertCircle, CheckCircle, HelpCircle, Send, MessageSquare, Brain, Shield } from "lucide-react";
@@ -37,7 +38,7 @@ export default function SARReport({ alert, chatMessages = [], onSendChat, isChat
     try {
       const res = await fetch(`${API_BASE}/api/feedback`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify({
           alert_id: alert.alert_id,
           decision,

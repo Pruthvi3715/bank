@@ -14,6 +14,14 @@ from datetime import datetime
 from app.privacy import get_vault
 from app.rag import get_knowledge_base
 
+_OLLAMA_AVAILABLE = False
+try:
+    from langchain_ollama import ChatOllama
+
+    _OLLAMA_AVAILABLE = True
+except ImportError:
+    pass
+
 
 # In-memory cache for pipeline results
 _pipeline_cache: Dict[str, Any] = {}
@@ -160,7 +168,20 @@ def _build_edges_for_tokenization(alert: dict) -> list:
 
 
 def _build_langchain_llm():
-    """Build a LangChain LLM instance from environment variables."""
+    """Build a LangChain LLM instance. Priority: Ollama (qwen2.5) -> OpenRouter -> None."""
+    if _OLLAMA_AVAILABLE:
+        ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        ollama_model = os.getenv("OLLAMA_MODEL", "qwen2.5:latest")
+        try:
+            return ChatOllama(
+                base_url=ollama_base_url,
+                model=ollama_model,
+                temperature=0.3,
+                num_predict=800,
+            )
+        except Exception:
+            pass
+
     api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")
     if not api_key:
         return None
@@ -188,40 +209,34 @@ def generate_chat_response(
 ) -> str:
     """
     Generate a chat response for the investigator.
-    Uses LangChain tool-calling agent if LLM available, falls back to direct LLM or rule-based.
+    Priority: Ollama qwen2.5 (direct) -> OpenRouter -> rule-based.
     """
     alert = get_alert_by_id(alert_id)
     if not alert:
         return "I couldn't find that alert. Please select an alert from the feed first."
 
+    vault = get_vault()
+
+    if _OLLAMA_AVAILABLE:
+        try:
+            context = build_chat_context(alert_id)
+            rag_context = _build_rag_context(message, alert)
+            if rag_context:
+                context = f"{context}\n\n{rag_context}"
+            return _ollama_chat(context, message, history or [])
+        except Exception:
+            pass
+
     api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        return _rule_based_response(alert, message)
-
-    try:
-        llm = _build_langchain_llm()
-        if llm is not None:
-            from app.agents.sar_agent import run_sar_agent
-
-            vault = get_vault()
-            response = run_sar_agent(
-                user_message=message,
-                alert_id=alert_id,
-                chat_history=history or [],
-                llm=llm,
-            )
-            return vault.detokenize_text(response)
-    except Exception:
-        pass
-
-    try:
-        context = build_chat_context(alert_id)
-        rag_context = _build_rag_context(message, alert)
-        if rag_context:
-            context = f"{context}\n\n{rag_context}"
-        return _llm_chat(context, message, history or [], api_key)
-    except Exception:
-        pass
+    if api_key:
+        try:
+            context = build_chat_context(alert_id)
+            rag_context = _build_rag_context(message, alert)
+            if rag_context:
+                context = f"{context}\n\n{rag_context}"
+            return _llm_chat(context, message, history or [], api_key)
+        except Exception:
+            pass
 
     return _rule_based_response(alert, message)
 
@@ -277,6 +292,57 @@ def _llm_chat(context: str, message: str, history: list, api_key: str) -> str:
     )
     resp.raise_for_status()
     raw_response = resp.json()["choices"][0]["message"]["content"]
+
+    return vault.detokenize_text(raw_response)
+
+
+def _ollama_chat(context: str, message: str, history: list) -> str:
+    """Generate response using local Ollama qwen2.5. Detokenizes response before returning."""
+    import httpx
+
+    vault = get_vault()
+
+    system_prompt = (
+        "You are a senior AML investigator assistant for GraphSentinel.\n"
+        "You have access to the following fraud case data:\n\n"
+        f"{context}\n\n"
+        "Answer the investigator's questions using only this case data.\n"
+        "Be specific, cite node IDs and amounts.\n"
+        "If asked to draft FIU content, use formal regulatory language.\n"
+        "Keep responses concise and actionable.\n"
+        "IMPORTANT: Use the token labels provided (e.g., HUB_NODE_abc123, CYCLE_ORIGIN_def456) "
+        "when referencing accounts — do not invent account numbers."
+    )
+
+    messages = [
+        {"role": "system", "content": system_prompt},
+    ]
+    for h in (history or [])[-6:]:
+        role = h.get("role", "user")
+        content = h.get("content", "")
+        if role not in ("user", "assistant"):
+            role = "user"
+        messages.append({"role": role, "content": content})
+    messages.append({"role": "user", "content": message})
+
+    ollama_base = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    ollama_model = os.getenv("OLLAMA_MODEL", "qwen2.5:latest")
+
+    resp = httpx.post(
+        f"{ollama_base}/api/chat",
+        json={
+            "model": ollama_model,
+            "messages": messages,
+            "stream": False,
+            "options": {
+                "temperature": 0.3,
+                "num_predict": 800,
+            },
+        },
+        timeout=60.0,
+    )
+    resp.raise_for_status()
+    raw_response = resp.json()["message"]["content"]
 
     return vault.detokenize_text(raw_response)
 

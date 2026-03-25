@@ -110,8 +110,8 @@ async def _close():
 
 def _flush_buffer() -> list:
     global _txn_buffer, _last_flush
-    flushed = list(_txn_buffer)
     with _buffer_lock:
+        flushed = list(_txn_buffer)
         _txn_buffer.clear()
         _last_flush = datetime.now(timezone.utc)
     return flushed
