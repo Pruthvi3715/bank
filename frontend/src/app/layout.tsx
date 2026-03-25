@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+const ibmPlexSans = IBM_Plex_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const ibmPlexMono = IBM_Plex_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
   weight: ["400", "500", "600"],
@@ -16,10 +16,12 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "GraphSentinel | AML Fraud Detection",
-  description: "AI-Powered AML investigative platform for detecting cyclic fraud and smurfing through knowledge graphs.",
+  description:
+    "AI-Powered AML investigative platform for detecting cyclic fraud and smurfing through knowledge graphs.",
   openGraph: {
     title: "GraphSentinel AML Detection",
-    description: "AI-Powered AML investigative platform for detecting cyclic fraud and smurfing through knowledge graphs.",
+    description:
+      "AI-Powered AML investigative platform for detecting cyclic fraud and smurfing through knowledge graphs.",
     type: "website",
   },
 };
@@ -32,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} antialiased`}
       >
         <a
           href="#main-content"

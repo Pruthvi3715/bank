@@ -13,6 +13,8 @@ from app.pipeline.pathfinder_agent import PathfinderAgent
 from app.pipeline.context_agent import ContextAgent
 from app.pipeline.scorer_agent import ScorerAgent
 from app.pipeline.report_agent import ReportAgent
+from app.pipeline.advanced_detector import AdvancedDetector
+from app.ml.anomaly_detector import AnomalyDetector
 
 
 # Minimum risk score to generate an alert (PRD: "elevated" band starts at 40)
@@ -99,7 +101,35 @@ class DetectionOrchestrator:
         for path in detections.get("temporal_layering", [])[:2]:
             activity.append({"agent": "Pathfinder Agent", "message": f"Temporal layering path ({len(path)} hops): {' → '.join(path[:5])}{'...' if len(path) > 5 else ''}"})
 
-        # Scoring & SAR (scorer_config from investigator feedback loop)
+        # Advanced detection algorithms (Tarjan, Louvain, PageRank, etc.)
+        advanced = AdvancedDetector(graph)
+        advanced_results = advanced.run_all_advanced(kyc_db=self.mock_kyc_db)
+
+        tarjan_sccs = advanced_results.get("tarjan_sccs", [])
+        if tarjan_sccs:
+            activity.append({"agent": "Advanced Detector", "message": f"Tarjan SCC: {len(tarjan_sccs)} strongly-connected components"})
+        fraud_rings = advanced_results.get("fraud_rings", [])
+        if fraud_rings:
+            activity.append({"agent": "Advanced Detector", "message": f"Louvain: {len(fraud_rings)} dense fraud ring communities"})
+        centrality = advanced_results.get("centrality", {})
+        top_pr = centrality.get("top_pagerank", [])[:3]
+        if top_pr:
+            activity.append({"agent": "Advanced Detector", "message": f"PageRank top nodes: {', '.join(n[0] for n in top_pr)}"})
+        top_bw = centrality.get("top_betweenness", [])[:3]
+        if top_bw:
+            activity.append({"agent": "Advanced Detector", "message": f"Betweenness bridges: {', '.join(n[0] for n in top_bw)}"})
+        dormant_motifs = advanced_results.get("dormant_motifs", [])
+        if dormant_motifs:
+            activity.append({"agent": "Advanced Detector", "message": f"Dormant motifs: {len(dormant_motifs)} early-warning activations"})
+        mismatches = advanced_results.get("profile_mismatches", [])
+        if mismatches:
+            activity.append({"agent": "Advanced Detector", "message": f"Profile mismatches: {len(mismatches)} accounts exceed 3x income"})
+
+        # ML scoring (Isolation Forest + Gradient Boosting)
+        ml_detector = AnomalyDetector()
+        ml_scores = ml_detector.score_all_nodes(graph, kyc_db=self.mock_kyc_db)
+        feature_importance = ml_detector.get_feature_importance()
+        activity.append({"agent": "ML Detector", "message": f"IF + GB scored {len(ml_scores)} nodes"})
         context_agent = ContextAgent(self.mock_kyc_db)
         scorer_config = get_scorer_config()
         scorer_agent = ScorerAgent(context_agent, graph=graph, scorer_config=scorer_config)
@@ -115,7 +145,7 @@ class DetectionOrchestrator:
                 edges.extend(_get_edges_for_pair(graph, u, v))
             score_data = scorer_agent.score_pattern("Cycle", cycle, edges=edges)
             if score_data["final_score"] >= _ALERT_THRESHOLD:
-                alerts.append(self._make_alert(score_data, cycle, edges, report_agent))
+                alerts.append(self._make_alert(score_data, cycle, edges, report_agent, ml_scores=ml_scores))
 
         # ---- Pattern 2: Smurfing ----
         seen_smurfing: set = set()
@@ -132,7 +162,7 @@ class DetectionOrchestrator:
             if score_data["final_score"] >= _ALERT_THRESHOLD:
                 edge_labels = [f"{s}->{target}" for s in senders]
                 alerts.append(
-                    self._make_alert(score_data, nodes, edges, report_agent, edge_labels)
+                    self._make_alert(score_data, nodes, edges, report_agent, edge_labels, ml_scores=ml_scores)
                 )
 
         # ---- Pattern 3: Hub-and-Spoke ----
@@ -156,7 +186,7 @@ class DetectionOrchestrator:
                     + [f"{hub}->{t}" for t in spokes_out]
                 )
                 alerts.append(
-                    self._make_alert(score_data, nodes, edges, report_agent, edge_labels)
+                    self._make_alert(score_data, nodes, edges, report_agent, edge_labels, ml_scores=ml_scores)
                 )
 
         # ---- Pattern 4: Pass-Through ----
@@ -180,7 +210,7 @@ class DetectionOrchestrator:
                     + [f"{node}->{s}" for s in succs]
                 )
                 alerts.append(
-                    self._make_alert(score_data, nodes, edges, report_agent, edge_labels)
+                    self._make_alert(score_data, nodes, edges, report_agent, edge_labels, ml_scores=ml_scores)
                 )
 
         # ---- Pattern 5: Dormant Activation ----
@@ -206,7 +236,7 @@ class DetectionOrchestrator:
                     + [f"{node}->{s}" for s in succs]
                 )
                 alerts.append(
-                    self._make_alert(score_data, nodes, edges, report_agent, edge_labels)
+                    self._make_alert(score_data, nodes, edges, report_agent, edge_labels, ml_scores=ml_scores)
                 )
 
         # ---- Pattern 6: Temporal Layering ----
@@ -222,7 +252,7 @@ class DetectionOrchestrator:
             score_data = scorer_agent.score_pattern("TemporalLayering", path, edges=edges)
             if score_data["final_score"] >= _ALERT_THRESHOLD:
                 alerts.append(
-                    self._make_alert(score_data, path, edges, report_agent, edge_labels)
+                    self._make_alert(score_data, path, edges, report_agent, edge_labels, ml_scores=ml_scores)
                 )
 
         # Deduplicate alerts with identical node sets
@@ -238,18 +268,39 @@ class DetectionOrchestrator:
         if len(alerts) > 5:
             activity.append({"agent": "Report Agent", "message": f"... and {len(alerts) - 5} more alerts"})
 
-        # Build visualization payload
-        nodes_viz = [{"id": n} for n in graph.nodes()]
+        # Build visualization payload (with centrality + ML data)
+        CHANNEL_COLORS = {
+            "UPI": "#378ADD", "NEFT": "#EF9F27", "RTGS": "#1D9E75",
+            "IMPS": "#7F77DD", "SWIFT": "#D85A30", "ATM": "#888780",
+        }
+        pagerank_data = centrality.get("pagerank", {})
+        betweenness_data = centrality.get("betweenness", {})
+        nodes_viz = []
+        for n in graph.nodes():
+            attrs = graph.nodes[n]
+            nd = {
+                "id": n,
+                "pagerank": round(pagerank_data.get(n, 0), 6),
+                "betweenness": round(betweenness_data.get(n, 0), 6),
+                "total_sent": attrs.get("total_sent", 0),
+                "total_received": attrs.get("total_received", 0),
+                "channels": list(attrs.get("channels", set())),
+            }
+            if n in ml_scores:
+                nd["if_score"] = ml_scores[n]["if_score"]
+                nd["xgb_score"] = ml_scores[n]["xgb_score"]
+            nodes_viz.append(nd)
+
         edges_viz = []
         for u, v, d in graph.edges(data=True):
-            edges_viz.append(
-                {
-                    "source": u,
-                    "target": v,
-                    "amount": d.get("amount", 0),
-                    "channel": d.get("channel", ""),
-                }
-            )
+            channel = d.get("channel", "")
+            edges_viz.append({
+                "source": u, "target": v,
+                "amount": d.get("amount", 0),
+                "channel": channel,
+                "color": CHANNEL_COLORS.get(channel, "#888780"),
+                "timestamp": str(d.get("timestamp", "")) if d.get("timestamp") else None,
+            })
 
         # Pattern summary
         pattern_counts: Dict[str, int] = {}
@@ -267,6 +318,23 @@ class DetectionOrchestrator:
                 "pattern_counts": pattern_counts,
             },
             "agent_activity": activity,
+            "advanced_detection": {
+                "tarjan_sccs": len(tarjan_sccs),
+                "fraud_rings": len(fraud_rings),
+                "centrality_top": {
+                    "pagerank": top_pr[:5] if top_pr else [],
+                    "betweenness": top_bw[:5] if top_bw else [],
+                },
+                "dormant_motifs": len(dormant_motifs),
+                "profile_mismatches": len(mismatches),
+            },
+            "ml_info": {
+                "feature_importance": feature_importance,
+                "model_status": {
+                    "isolation_forest": "trained",
+                    "gradient_boosting": "trained" if ml_detector.gb_model else "heuristic",
+                },
+            },
         }
 
     # ------------------------------------------------------------------
@@ -279,6 +347,7 @@ class DetectionOrchestrator:
         edges: List[Dict[str, Any]],
         report_agent: ReportAgent,
         edge_labels: Optional[List[str]] = None,
+        ml_scores: Optional[Dict[str, Dict[str, float]]] = None,
     ) -> AlertBase:
         if edge_labels is None:
             edge_labels = [
@@ -286,6 +355,16 @@ class DetectionOrchestrator:
                 for e in edges
             ]
         explanation = report_agent.generate_sar_draft(score_data, edges)
+
+        # Compute average ML scores across alert nodes
+        avg_if = 0.0
+        avg_xgb = 0.0
+        if ml_scores:
+            if_vals = [ml_scores.get(n, {}).get("if_score", 0) for n in nodes]
+            xgb_vals = [ml_scores.get(n, {}).get("xgb_score", 0) for n in nodes]
+            avg_if = sum(if_vals) / len(if_vals) if if_vals else 0
+            avg_xgb = sum(xgb_vals) / len(xgb_vals) if xgb_vals else 0
+
         return AlertBase(
             alert_id=str(uuid.uuid4()),
             timestamp=datetime.now(),
@@ -307,6 +386,8 @@ class DetectionOrchestrator:
             ),
             scoring_signals=score_data.get("scoring_signals", {}),
             llm_explanation=explanation,
+            if_score=round(avg_if, 4),
+            xgb_score=round(avg_xgb, 4),
         )
 
     @staticmethod

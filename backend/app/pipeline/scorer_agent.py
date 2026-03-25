@@ -3,13 +3,14 @@ import sys
 from typing import Any, Dict, List, Optional
 import networkx as nx
 
-_config_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "config")
+_config_path = os.path.join(os.path.dirname(__file__), "..", "..", "config")
 if _config_path not in sys.path:
     sys.path.insert(0, os.path.abspath(_config_path))
 
 try:
     import settings as cfg
 except ImportError:
+
     class cfg:  # type: ignore
         PASSTHROUGH_RATIO_THRESHOLD = 0.85
         DORMANT_MIN_INACTIVE_MONTHS = 6
@@ -25,11 +26,11 @@ _BASE_SCORES: Dict[str, float] = {
     "TemporalLayering": 20.0,
 }
 
-_TEMPORAL_VELOCITY_BONUS = 20.0   # rapid multi-hop <24 hrs
-_CROSS_CHANNEL_BONUS = 10.0        # funds switch channel mid-hop
-_NEAR_THRESHOLD_BONUS = 15.0       # structuring near ₹50 000 CTR limit
-_PASS_THROUGH_BONUS = 15.0         # zero-retention forwarding
-_DORMANT_BONUS = 20.0              # dormant re-activation
+_TEMPORAL_VELOCITY_BONUS = 20.0  # rapid multi-hop <24 hrs
+_CROSS_CHANNEL_BONUS = 10.0  # funds switch channel mid-hop
+_NEAR_THRESHOLD_BONUS = 15.0  # structuring near ₹50 000 CTR limit
+_PASS_THROUGH_BONUS = 15.0  # zero-retention forwarding
+_DORMANT_BONUS = 20.0  # dormant re-activation
 
 
 class ScorerAgent:
@@ -89,7 +90,18 @@ class ScorerAgent:
         # --- Signal 6: dormant activation ---
         da_bonus = self._dormant_activation_bonus(nodes)
 
-        raw_score = base + vel_bonus + cc_bonus + nt_bonus + pt_bonus + da_bonus
+        # --- Signal 7: profile mismatch (PS3 requirement) ---
+        mismatch_bonus = self._profile_mismatch_bonus(nodes, edges)
+
+        raw_score = (
+            base
+            + vel_bonus
+            + cc_bonus
+            + nt_bonus
+            + pt_bonus
+            + da_bonus
+            + mismatch_bonus
+        )
         raw_score = min(raw_score, 100.0)
 
         # --- Innocence discount (average across involved nodes, capped 30%) ---
@@ -120,6 +132,7 @@ class ScorerAgent:
                 "near_threshold_structuring": nt_bonus,
                 "pass_through": pt_bonus,
                 "dormant_activation": da_bonus,
+                "profile_mismatch": mismatch_bonus,
             },
         }
 
@@ -136,6 +149,7 @@ class ScorerAgent:
                 return 0.0
             span = max(timestamps) - min(timestamps)
             from datetime import timedelta
+
             if span < timedelta(hours=24):
                 return _TEMPORAL_VELOCITY_BONUS
         except Exception:
@@ -149,9 +163,7 @@ class ScorerAgent:
 
     def _near_threshold_bonus(self, edges: List[Dict[str, Any]]) -> float:
         """Bonus if amounts cluster just below the ₹50 000 CTR reporting limit."""
-        flagged = sum(
-            1 for e in edges if 45000 <= e.get("amount", 0) < 50000
-        )
+        flagged = sum(1 for e in edges if 45000 <= e.get("amount", 0) < 50000)
         return _NEAR_THRESHOLD_BONUS if flagged > 0 else 0.0
 
     def _pass_through_bonus(self, nodes: List[str]) -> float:
@@ -171,6 +183,29 @@ class ScorerAgent:
         if self.graph is None:
             return 0.0
         from datetime import timedelta
+
+        threshold = timedelta(days=cfg.DORMANT_MIN_INACTIVE_MONTHS * 30)
+        for node in nodes:
+            attrs = self.graph.nodes.get(node, {})
+            first = attrs.get("first_seen")
+            last = attrs.get("last_seen")
+            if first and last and (last - first) >= threshold:
+                return _DORMANT_BONUS
+        return 0.0
+
+    def _profile_mismatch_bonus(
+        self, nodes: List[str], edges: List[Dict[str, Any]]
+    ) -> float:
+        """Bonus if any node in the subgraph has declared_income vs actual flow mismatch (PS3)."""
+        try:
+            result = self.context_agent.score_pattern_mismatch(nodes, edges)
+            if result.get("mismatch_detected"):
+                return result.get("risk_signal", 0.0)
+        except Exception:
+            pass
+        return 0.0
+        from datetime import timedelta
+
         threshold = timedelta(days=cfg.DORMANT_MIN_INACTIVE_MONTHS * 30)
         for node in nodes:
             attrs = self.graph.nodes.get(node, {})

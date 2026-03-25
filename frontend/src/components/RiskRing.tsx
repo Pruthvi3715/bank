@@ -1,72 +1,100 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { useMemo } from "react";
 
 interface RiskRingProps {
   score: number;
+  label?: string;
   size?: number;
-  strokeWidth?: number;
   className?: string;
   showValue?: boolean;
+  strokeWidth?: number;
 }
 
 export default function RiskRing({
   score,
-  size = 48,
-  strokeWidth = 4,
-  className,
+  label,
+  size = 120,
   showValue = true,
+  strokeWidth = 4,
 }: RiskRingProps) {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
-  const offset = circumference - (score / 100) * circumference;
+  const clampedScore = Math.max(0, Math.min(100, Math.round(score)));
+  const radius = (size - strokeWidth * 2) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (clampedScore / 100) * circumference;
 
-  const getColor = (s: number) => {
-    if (s >= 80) return "stroke-red-500";
-    if (s >= 60) return "stroke-orange-500";
-    if (s >= 40) return "stroke-yellow-500";
-    return "stroke-emerald-500";
-  };
+  const riskColor = useMemo(() => {
+    if (clampedScore >= 80)
+      return { stroke: "#ef4444", glow: "drop-shadow(0 0 8px rgba(239,68,68,0.5))" };
+    if (clampedScore >= 60)
+      return { stroke: "#f97316", glow: "drop-shadow(0 0 6px rgba(249,115,22,0.4))" };
+    if (clampedScore >= 40)
+      return { stroke: "#eab308", glow: "drop-shadow(0 0 6px rgba(234,179,8,0.3))" };
+    return { stroke: "#10b981", glow: "drop-shadow(0 0 6px rgba(16,185,129,0.3))" };
+  }, [clampedScore]);
 
-  const getBgColor = (s: number) => {
-    if (s >= 80) return "text-red-500/20";
-    if (s >= 60) return "text-orange-500/20";
-    if (s >= 40) return "text-yellow-500/20";
-    return "text-emerald-500/20";
-  };
+  const riskLabel = useMemo(() => {
+    if (clampedScore >= 80) return "CRITICAL";
+    if (clampedScore >= 60) return "HIGH";
+    if (clampedScore >= 40) return "ELEVATED";
+    return "LOW";
+  }, [clampedScore]);
+
+  const center = size / 2;
 
   return (
-    <div
-      className={cn("relative inline-flex items-center justify-center", className)}
-      style={{ width: size, height: size }}
-    >
-      <svg width={size} height={size} className="-rotate-90">
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          strokeWidth={strokeWidth}
-          className={cn("transition-all duration-500", getBgColor(score))}
-        />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          strokeWidth={strokeWidth}
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-          className={cn(
-            "transition-all duration-700 ease-out",
-            getColor(score)
+    <div className="flex flex-col items-center gap-1">
+      <div className="relative" style={{ width: size, height: size }}>
+        <svg
+          width={size}
+          height={size}
+          className="transform -rotate-90"
+          style={{ filter: clampedScore > 0 ? riskColor.glow : undefined }}
+        >
+          <circle
+            cx={center}
+            cy={center}
+            r={radius}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={strokeWidth}
+            className="text-border"
+          />
+          {clampedScore > 0 && (
+            <circle
+              cx={center}
+              cy={center}
+              r={radius}
+              fill="none"
+              stroke={riskColor.stroke}
+              strokeWidth={strokeWidth}
+              strokeDasharray={circumference}
+              strokeDashoffset={offset}
+              strokeLinecap="butt"
+              className="transition-all duration-700 ease-out"
+            />
           )}
-        />
-      </svg>
-      {showValue && (
-        <span className="absolute text-xs font-bold font-mono">
-          {score.toFixed(0)}
+        </svg>
+        {showValue && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span
+              className="font-mono font-bold tabular-nums text-foreground"
+              style={{ fontSize: size * 0.22 }}
+            >
+              {clampedScore}
+            </span>
+            <span
+              className="font-mono uppercase tracking-widest text-muted-foreground"
+              style={{ fontSize: Math.max(7, size * 0.07) }}
+            >
+              {riskLabel}
+            </span>
+          </div>
+        )}
+      </div>
+      {label && (
+        <span className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
+          {label}
         </span>
       )}
     </div>

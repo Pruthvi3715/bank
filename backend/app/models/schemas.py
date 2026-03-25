@@ -56,3 +56,6 @@ class AlertBase(BaseModel):
     # Per-signal breakdown so the UI can display a breakdown table
     scoring_signals: Dict[str, float] = Field(default_factory=dict)
     llm_explanation: Optional[str] = None
+    # ML model scores (Phase 3)
+    if_score: float = 0.0
+    xgb_score: float = 0.0
