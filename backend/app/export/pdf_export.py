@@ -31,17 +31,24 @@ try:
     from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 
     _HAS_REPORTLAB = True
+
+    RISK_COLOR = {
+        "Critical": colors.HexColor("#DC2626"),
+        "High": colors.HexColor("#EA580C"),
+        "Medium": colors.HexColor("#D97706"),
+        "Low": colors.HexColor("#65A30D"),
+        "Unknown": colors.HexColor("#6B7280"),
+    }
 except ImportError:
     _HAS_REPORTLAB = False
-
-
-RISK_COLOR = {
-    "Critical": colors.HexColor("#DC2626"),
-    "High": colors.HexColor("#EA580C"),
-    "Medium": colors.HexColor("#D97706"),
-    "Low": colors.HexColor("#65A30D"),
-    "Unknown": colors.HexColor("#6B7280"),
-}
+    RISK_COLOR = {
+        "Critical": "#DC2626",
+        "High": "#EA580C",
+        "Medium": "#D97706",
+        "Low": "#65A30D",
+        "Unknown": "#6B7280",
+    }
+    colors = None  # type: ignore[assignment]
 
 PATTERN_DISPOSITION = {
     "Cycle": "Initiate STR; freeze cycle accounts; contact counterpart banks",

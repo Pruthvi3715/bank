@@ -2,6 +2,7 @@ import io
 import json
 import os
 import uuid
+from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
@@ -32,6 +33,17 @@ from app.sar_chatbot import (
     QUICK_QUESTIONS,
 )
 from app.export.pdf_export import generate_alert_pdf
+from app.export.summary_pdf import generate_project_summary_pdf
+from app.events.consumer import (
+    start_streaming,
+    stop_streaming,
+    _BOOTSTRAP_SERVERS,
+    _BATCH_SIZE,
+    _BATCH_TIMEOUT_SEC,
+    _running,
+    _txn_buffer,
+    _ENABLE_STREAMING,
+)
 from app.auth import (
     authenticate_user,
     create_access_token,
@@ -47,6 +59,21 @@ app = FastAPI(
     description="AI-Powered Fund Flow Fraud Detection API",
     version="1.0.0",
 )
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    streaming_task = await start_streaming()
+    yield
+    await stop_streaming()
+    if streaming_task:
+        try:
+            streaming_task.cancel()
+        except Exception:
+            pass
+
+
+app.router.lifespan_context = lifespan
 
 
 # ── WebSocket for Live Agent Activity ────────────────────────────────────────
@@ -275,6 +302,77 @@ async def run_pipeline_csv(
     return result
 
 
+@app.post("/api/run-pipeline-csv/stream")
+async def stream_csv_to_kafka(
+    file: UploadFile = File(...),
+    current_user: User = Depends(require_role(["investigator", "senior_analyst"])),
+):
+    """
+    Upload a CSV and stream each row as a Kafka event to graphsentinel.transactions.raw.
+    The Kafka consumer will batch and run detection automatically.
+    Returns the number of transactions streamed.
+    """
+    if not file.filename or not file.filename.lower().endswith(".csv"):
+        raise HTTPException(status_code=400, detail="Please upload a .csv file")
+    raw = await file.read()
+    if not raw:
+        raise HTTPException(status_code=400, detail="Uploaded CSV file is empty")
+
+    try:
+        df = pd.read_csv(io.BytesIO(raw))
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail="Unable to parse CSV file") from exc
+
+    try:
+        from aiokafka import AIOKafkaProducer
+
+        producer = AIOKafkaProducer(
+            bootstrap_servers=_BOOTSTRAP_SERVERS,
+            value_serializer=lambda v: json.dumps(v, default=str).encode("utf-8"),
+        )
+        await producer.start()
+    except Exception:
+        raise HTTPException(
+            status_code=503,
+            detail="Kafka/Redpanda not available. Set KAFKA_ENABLE_STREAMING=true and ensure REDPANDA_BROKERS is configured.",
+        )
+
+    transactions = _rows_to_transactions(df)
+    sent = 0
+    try:
+        for txn in transactions:
+            await producer.send(
+                "graphsentinel.transactions.raw",
+                value=txn,
+            )
+            sent += 1
+    finally:
+        await producer.stop()
+
+    return {
+        "status": "streamed",
+        "count": sent,
+        "topic": "graphsentinel.transactions.raw",
+        "note": "Kafka consumer will batch and run detection automatically",
+    }
+
+
+@app.get("/api/streaming/status")
+def get_streaming_status(
+    current_user: User = Depends(
+        require_role(["investigator", "senior_analyst", "readonly"])
+    ),
+):
+    """Check if Kafka streaming consumer is active and configured."""
+    return {
+        "streaming_enabled": _ENABLE_STREAMING,
+        "consumer_active": _running,
+        "buffer_size": len(_txn_buffer),
+        "batch_size": _BATCH_SIZE,
+        "batch_timeout_sec": _BATCH_TIMEOUT_SEC,
+    }
+
+
 # ── Feedback ──────────────────────────────────────────────────────────────────
 class FeedbackBody(BaseModel):
     alert_id: str
@@ -368,6 +466,26 @@ def export_alert_pdf(
         raise HTTPException(status_code=500, detail=f"PDF generation failed: {exc}")
 
 
+@app.get("/api/project-summary.pdf")
+def download_project_summary(
+    current_user: User = Depends(
+        require_role(["investigator", "senior_analyst", "readonly"])
+    ),
+):
+    """Download one-page project summary PDF for hackathon submission."""
+    try:
+        pdf_bytes = generate_project_summary_pdf()
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": 'attachment; filename="GraphSentinel_Project_Summary.pdf"'
+            },
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"PDF generation failed: {exc}")
+
+
 # ── Node & Graph ───────────────────────────────────────────────────────────────
 @app.get("/api/node/{node_id}")
 def get_node_detail(node_id: str):
@@ -421,7 +539,7 @@ def get_ml_info():
             },
             "model_status": {
                 "isolation_forest": "pending",
-                "gradient_boosting": "pending",
+                "xgboost": "pending",
             },
         }
     return ml_info

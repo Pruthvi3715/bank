@@ -1,6 +1,6 @@
 """
 ML-based anomaly detection for GraphSentinel.
-Isolation Forest (unsupervised) + Gradient Boosting (supervised).
+Isolation Forest (unsupervised) + XGBoost (supervised).
 Models are trained on-the-fly from graph data each pipeline run.
 """
 
@@ -16,11 +16,11 @@ from app.ml.feature_extractor import (
 
 
 class AnomalyDetector:
-    """Dual ML scoring: Isolation Forest + Gradient Boosting."""
+    """Dual ML scoring: Isolation Forest + XGBoost."""
 
     def __init__(self):
         self.if_model = None
-        self.gb_model = None
+        self.xgb_model = None
         self._feature_names = FEATURE_NAMES
 
     # ------------------------------------------------------------------
@@ -41,22 +41,34 @@ class AnomalyDetector:
         except ImportError:
             self.if_model = None
 
-    def train_gradient_boosting(
-        self, feature_matrix: np.ndarray, labels: np.ndarray
-    ) -> None:
-        """Train Gradient Boosting with fraud labels."""
+    def train_xgboost(self, feature_matrix: np.ndarray, labels: np.ndarray) -> None:
+        """Train XGBoost classifier with fraud labels (sklearn fallback)."""
         try:
-            from sklearn.ensemble import GradientBoostingClassifier
+            import xgboost as xgb
 
-            self.gb_model = GradientBoostingClassifier(
+            self.xgb_model = xgb.XGBClassifier(
                 n_estimators=100,
                 max_depth=4,
                 learning_rate=0.1,
                 random_state=42,
+                n_jobs=-1,
+                eval_metric="logloss",
+                verbosity=0,
             )
-            self.gb_model.fit(feature_matrix, labels)
+            self.xgb_model.fit(feature_matrix, labels)
         except ImportError:
-            self.gb_model = None
+            try:
+                from sklearn.ensemble import GradientBoostingClassifier
+
+                self.xgb_model = GradientBoostingClassifier(
+                    n_estimators=100,
+                    max_depth=4,
+                    learning_rate=0.1,
+                    random_state=42,
+                )
+                self.xgb_model.fit(feature_matrix, labels)
+            except ImportError:
+                self.xgb_model = None
 
     # ------------------------------------------------------------------
     # Scoring
@@ -71,20 +83,20 @@ class AnomalyDetector:
         except Exception:
             return 0.0
 
-    def score_gb(self, features: np.ndarray) -> float:
-        """Gradient Boosting fraud probability (0-1)."""
-        if self.gb_model is None:
+    def score_xgb(self, features: np.ndarray) -> float:
+        """XGBoost fraud probability (0-1)."""
+        if self.xgb_model is None:
             return 0.0
         try:
-            proba = self.gb_model.predict_proba(features.reshape(1, -1))[0]
+            proba = self.xgb_model.predict_proba(features.reshape(1, -1))[0]
             return round(float(proba[1]) if len(proba) > 1 else 0.0, 4)
         except Exception:
             return 0.0
 
     def get_feature_importance(self) -> Dict[str, float]:
-        """Feature importances (from GB model or domain-knowledge defaults)."""
-        if self.gb_model is not None:
-            importances = self.gb_model.feature_importances_
+        """Feature importances (from XGB model or domain-knowledge defaults)."""
+        if self.xgb_model is not None:
+            importances = self.xgb_model.feature_importances_
             return dict(zip(self._feature_names, importances.tolist()))
         return {
             "in_degree": 0.08,
@@ -116,18 +128,18 @@ class AnomalyDetector:
         if self.if_model is None:
             self.train_isolation_forest(feature_matrix)
 
-        # Train GB with heuristic labels if no real labels available
-        if self.gb_model is None:
+        # Train XGBoost with heuristic labels if no real labels available
+        if self.xgb_model is None:
             labels = self._generate_heuristic_labels(feature_matrix, graph, node_ids)
             if labels is not None and len(np.unique(labels)) > 1:
-                self.train_gradient_boosting(feature_matrix, labels)
+                self.train_xgboost(feature_matrix, labels)
 
         scores: Dict[str, Dict[str, float]] = {}
         for i, node_id in enumerate(node_ids):
             f = feature_matrix[i]
             scores[node_id] = {
                 "if_score": self.score_if(f),
-                "xgb_score": self.score_gb(f),
+                "xgb_score": self.score_xgb(f),
             }
         return scores
 

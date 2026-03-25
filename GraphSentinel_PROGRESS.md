@@ -13,9 +13,9 @@ This document tracks the implementation status of all 52 tasks from GraphSentine
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ COMPLETED | 36 | 69% |
-| 🔄 IN PROGRESS | 4 | 8% |
-| ⏳ NOT STARTED | 12 | 23% |
+| ✅ COMPLETED | 46 | 88% |
+| 🔄 IN PROGRESS | 1 | 2% |
+| ⏳ NOT STARTED | 5 | 10% |
 | **TOTAL** | **52** | **100%** |
 
 ---
@@ -67,12 +67,20 @@ This document tracks the implementation status of all 52 tasks from GraphSentine
 - Development profile for hot-reload
 
 ### T7 · Set Up Kafka Producer (Replaces CSV Loader)
-**Status:** ⏳ NOT STARTED  
-**Gap:** Kafka not included in docker-compose  
-**Required Action:**
-- Add Kafka + Zookeeper services to docker-compose.yml
-- Implement KafkaProducer in backend
-- Create KafkaConsumer in data pipeline
+**Status:** ✅ COMPLETED  
+**Implementation:**
+- Redpanda (Kafka-compatible) added to `docker-compose.yml` (port 9092)
+- `backend/app/events/producer.py` — fire-and-forget event producer with topics:
+  `graphsentinel.pipeline.started`, `.alert_created`, `.completed`, `.error`
+- `backend/app/events/consumer.py` — streaming consumer that:
+  - Consumes from `graphsentinel.transactions.raw`
+  - Batches by time window (10s) or count (500 txns)
+  - Runs `DetectionOrchestrator` on each batch
+  - Emits alerts to `graphsentinel.alerts.detected`
+- FastAPI lifespan wired to `start_streaming()` / `stop_streaming()`
+- **POST /api/run-pipeline-csv/stream** — streams CSV rows to Kafka (CSV→Kafka bridge)
+- **GET /api/streaming/status** — shows consumer active/buffer/batch config
+- Env vars: `KAFKA_ENABLE_STREAMING`, `KAFKA_BATCH_TIMEOUT_SEC`, `KAFKA_BATCH_SIZE`
 
 ---
 
@@ -107,11 +115,11 @@ This document tracks the implementation status of all 52 tasks from GraphSentine
 - Configurable dormant months threshold
 
 ### T12 · Add PageRank + Approximate Betweenness Centrality
-**Status:** ⏳ NOT STARTED  
-**Gap:** Not implemented in current codebase  
-**Required Action:**
-- Add centrality metrics computation to pathfinder_agent.py
-- Use `nx.pagerank()` and `nx.betweenness_centrality()` with sampling
+**Status:** ✅ COMPLETED  
+**Implementation:**
+- `pathfinder_agent.py` — `compute_centrality()` method
+- `top_central_nodes(n)` returns top-k by PageRank and Betweenness
+- Wired into advanced detector and activity log
 
 ### T13 · Add Channel + Branch Color Coding to Graph Edges
 **Status:** ✅ COMPLETED  
@@ -121,12 +129,11 @@ This document tracks the implementation status of all 52 tasks from GraphSentine
 - Legend implemented in frontend
 
 ### T14 · Add Profile Mismatch Detection
-**Status:** ⏳ NOT STARTED  
-**Gap:** Declared income not in current schema  
-**Required Action:**
-- Add declared_income field to account data
-- Implement mismatch detection in context_agent.py
-- Add threshold comparison logic
+**Status:** ✅ COMPLETED  
+**Implementation:**
+- `context_agent.py:detect_profile_mismatch()` — flags accounts where monthly flow > 3x declared income
+- `kyc_db` has `income_bracket` per customer
+- Signal 7 in `scorer_agent.py` adds +25 risk bonus for mismatched accounts
 
 ---
 
@@ -148,11 +155,12 @@ This document tracks the implementation status of all 52 tasks from GraphSentine
 - Returns anomaly score 0-1
 
 ### T17 · Train XGBoost Classifier on IBM AMLSim Labels `CRITICAL`
-**Status:** ⚠️ PARTIAL  
+**Status:** ✅ COMPLETED  
 **Implementation:**
-- GradientBoostingClassifier used instead of XGBoost
-- Uses heuristic labels when ground truth not available
-- `train_gradient_boosting()` implemented
+- `anomaly_detector.py` upgraded to use `xgboost.XGBClassifier` with sklearn fallback
+- Heuristic labels used when ground truth not available
+- `train_xgboost()` + `score_xgb()` implemented
+- `xgb_score` returned per node in `score_all_nodes()`
 
 ### T18 · Wire Both ML Scores into risk_scorer.py `CRITICAL`
 **Status:** ✅ COMPLETED  
@@ -186,34 +194,34 @@ This document tracks the implementation status of all 52 tasks from GraphSentine
 ## Phase 4 — Privacy & Security 🟠
 
 ### T22 · Implement TokenVault with SHA-256 + Per-Session Salt `CRITICAL`
-**Status:** ⏳ NOT STARTED  
-**Gap:** TokenVault class not implemented  
-**Required Action:**
-- Create `backend/app/privacy/token_vault.py`
-- Implement SHA-256 + per-session salt tokenization
-- Role-based token names (CYCLE_ORIGIN, HUB_NODE, etc.)
+**Status:** ✅ COMPLETED  
+**Implementation:**
+- `backend/app/privacy/token_vault.py` — TokenVault class with per-session SHA-256 salt
+- Role-based token names: `CYCLE_ORIGIN_`, `HUB_NODE_`, `SMURF_TARGET_`, etc.
+- `reverse_mapping` property exposes token→real-ID mapping
+- Shared singleton via `get_vault()`
 
 ### T23 · Implement detokenize_text() for LLM Responses `CRITICAL`
-**Status:** ⏳ NOT STARTED  
-**Gap:** Requires TokenVault implementation  
-**Required Action:**
-- Implement detokenize_text() method in TokenVault
-- Apply before LLM output reaches frontend
+**Status:** ✅ COMPLETED  
+**Implementation:**
+- `detokenize_text()` in `token_vault.py` — replaces token labels with real IDs
+- Called in `sar_chatbot.py:_llm_chat()` before returning LLM response
+- Prevents raw account IDs from leaking to frontend
 
 ### T24 · Add Edge Annotations to LLM Prompt
-**Status:** ⏳ NOT STARTED  
-**Gap:** sar_chatbot.py needs tokenization  
-**Required Action:**
-- Integrate TokenVault into sar_chatbot.py
-- Add structural annotations to prompts
+**Status:** ✅ COMPLETED  
+**Implementation:**
+- `build_chat_context()` in `sar_chatbot.py` uses `tokenized_edges` directly
+- Edge annotations (channel, amount) included in prompt context
+- `tokenize_edges()` in TokenVault for full edge tokenization
 
 ### T25 · Add JWT Authentication to FastAPI
-**Status:** ⏳ NOT STARTED  
-**Gap:** No auth implemented  
-**Required Action:**
-- Add JWT authentication middleware
-- Protect /api/sar-chat and /api/feedback endpoints
-- Add role-based access control
+**Status:** ✅ COMPLETED  
+**Implementation:**
+- `backend/app/auth/jwt_auth.py` — OAuth2 Bearer token auth
+- `/api/token` endpoint with `python-jose` + `passlib[bcrypt]`
+- Roles: `investigator`, `senior_analyst`, `readonly`
+- `require_role()` dependency protects `/api/sar-chat`, `/api/feedback`, `/api/run-pipeline-csv`
 
 ### T26 · Build Audit Log Table in PostgreSQL
 **Status:** ✅ COMPLETED  
@@ -240,28 +248,27 @@ This document tracks the implementation status of all 52 tasks from GraphSentine
 - Streaming response support
 
 ### T29 · Set Up ChromaDB for SAR Vector Store
-**Status:** ⏳ NOT STARTED  
-**Gap:** ChromaDB not integrated  
-**Required Action:**
-- Add ChromaDB to docker-compose
-- Implement RAG indexing in sar_chatbot.py
-- Add sentence-transformers for embeddings
+**Status:** ✅ COMPLETED  
+**Implementation:**
+- ChromaDB service in `docker-compose.yml` (port 8001)
+- `backend/app/rag/knowledge_base.py` — full ChromaDB RAG service
+- Sentence transformers embedding via `sentence-transformers`
+- `CHROMADB_URL` env var configured in docker-compose
 
 ### T30 · Implement RAG Retrieval for Multi-Report Chat
-**Status:** ⏳ NOT STARTED  
-**Gap:** RAG not implemented  
-**Required Action:**
-- Implement retrieve_relevant_context()
-- Add similar case lookup
-- Inject RAG context into prompts
+**Status:** ✅ COMPLETED  
+**Implementation:**
+- `retrieve_relevant_context()` in `knowledge_base.py`
+- `query_similar_cases()` in `sar_chatbot.py`
+- RAG context injected into `_build_prompt()` in chatbot
+- Pre-populated with 5 sample SAR cases
 
 ### T31 · Build LangChain Agent with 4 Tools
-**Status:** ⏳ NOT STARTED  
-**Gap:** LangChain not used  
-**Required Action:**
-- Add langchain dependencies
-- Implement tools: get_alert_details, get_subgraph, get_sar_draft, query_similar_cases
-- Create agent executor
+**Status:** ✅ COMPLETED  
+**Implementation:**
+- `backend/app/agents/sar_agent.py` — LangChain agent via `create_tool_calling_agent`
+- Tools: `get_alert_details`, `get_subgraph`, `get_sar_draft`, `query_similar_cases`
+- Agent executor wired into `generate_chat_response()` in `sar_chatbot.py`
 
 ### T32 · Add 4 Pre-Written Question Buttons to Chatbot UI
 **Status:** ✅ COMPLETED  
@@ -407,12 +414,12 @@ This document tracks the implementation status of all 52 tasks from GraphSentine
 ## Phase 8 — Submission 🔴
 
 ### T49 · Upload One-Page Summary PDF to Google Drive `CRITICAL`
-**Status:** ⏳ NOT STARTED  
-**Gap:** Summary PDF not created  
-**Required Action:**
-- Create one-page summary
-- Upload to Google Drive
-- Make publicly accessible
+**Status:** 🔄 IN PROGRESS  
+**Implementation:**
+- `backend/app/export/summary_pdf.py` — generates one-page project summary
+- `GET /api/project-summary.pdf` — downloadable from browser
+- `GraphSentinel_Summary.pdf` saved to repo root
+- **Manual step:** Upload to Google Drive and share link
 
 ### T50 · Delete Submission Guidelines Slide (Slide 2) `CRREDITICAL`
 **Status:** ⏳ NOT STARTED  
@@ -448,7 +455,7 @@ This document tracks the implementation status of all 52 tasks from GraphSentine
 | T9 — Louvain | Detection | ✅ |
 | T15 — Feature extraction | ML | ✅ |
 | T16 — Isolation Forest | ML | ✅ |
-| T17 — XGBoost | ML | ⚠️ (GB used instead) |
+| T17 — XGBoost | ML | ✅ |
 | T18 — Wire ML scores | ML | ✅ |
 | T22 — TokenVault | Security | ⏳ |
 | T28 — SAR chatbot | Chatbot | ✅ |
@@ -486,10 +493,13 @@ This document tracks the implementation status of all 52 tasks from GraphSentine
 
 ### Immediate Actions (Before Grand Finale)
 
-1. **Implement TokenVault** - This is a key differentiator for judges
-2. **Add ChromaDB** - Enables cross-case analysis in chatbot
-3. **PDF Export** - Required for SAR workflow
-4. **Full Demo Test** - Run entire pipeline on clean machine
+1. ✅ TokenVault (T22/23/24) — DONE
+2. ✅ ChromaDB RAG (T29/30/31) — DONE
+3. ✅ PDF Export (T41) — DONE
+4. ✅ Kafka Streaming (T7) — DONE
+5. **Full Demo Test** — Run entire pipeline on clean machine
+6. **Record Demo Video** — T48 for insurance
+7. **Submission Docs** — T49/50/51 (manual PPT tasks)
 
 ### Risk Mitigation
 

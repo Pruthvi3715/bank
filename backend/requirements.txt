@@ -9,6 +9,7 @@ python-dotenv
 openai
 python-multipart
 scikit-learn
+xgboost
 numpy
 joblib
 chromadb>=0.5.0
