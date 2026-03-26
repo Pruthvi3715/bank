@@ -7,12 +7,15 @@ LangChain: Uses tool-calling agent with 4 tools (get_alert_details,
            get_subgraph, get_sar_draft, query_similar_cases).
 """
 
+import asyncio
+import json
 import os
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
 from app.privacy import get_vault
 from app.rag import get_knowledge_base
+from app.cache.redis_cache import cache_get as _redis_get, cache_set as _redis_set
 
 _OLLAMA_AVAILABLE = False
 try:
@@ -48,13 +51,32 @@ QUICK_QUESTIONS = [
 
 
 def cache_pipeline_result(result: dict) -> None:
-    """Cache the latest pipeline result for chatbot context."""
+    """Cache the latest pipeline result for chatbot context (local + Redis)."""
     global _pipeline_cache
     _pipeline_cache = result
+    # Fire-and-forget Redis write (non-blocking for sync callers)
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            loop.create_task(_redis_set("pipeline:latest", result, ttl=7200))
+        else:
+            loop.run_until_complete(_redis_set("pipeline:latest", result, ttl=7200))
+    except RuntimeError:
+        pass
 
 
 def get_cached_result() -> Dict[str, Any]:
-    """Get cached pipeline result."""
+    """Get cached pipeline result from local in-memory store."""
+    return _pipeline_cache
+
+
+async def get_cached_result_async() -> Dict[str, Any]:
+    """Get cached pipeline result, preferring Redis over local cache."""
+    cached = await _redis_get("pipeline:latest")
+    if cached is not None:
+        global _pipeline_cache
+        _pipeline_cache = cached
+        return cached
     return _pipeline_cache
 
 

@@ -1,3 +1,4 @@
+import asyncio
 import uuid
 from datetime import datetime
 from typing import List, Dict, Any, Optional
@@ -36,18 +37,25 @@ def _get_edges_for_pair(graph: nx.MultiDiGraph, u: str, v: str) -> List[Dict[str
 class DetectionOrchestrator:
     def __init__(self):
         self.mock_kyc_db = build_mock_kyc()
+        self._last_graph: Optional[nx.MultiDiGraph] = None
 
     # ------------------------------------------------------------------
     # Main pipeline entry points
     # ------------------------------------------------------------------
     def run_detection_pipeline(
-        self, transactions: Optional[List[TransactionBase]] = None
+        self,
+        transactions: Optional[List[TransactionBase]] = None,
+        scorer_config: Optional[Dict[str, Any]] = None,
+        sync_neo4j: bool = True,
     ) -> Dict[str, Any]:
         """
         Run the full detection pipeline.
 
         If transactions is None a fresh synthetic scenario is generated.
         Pass a list of TransactionBase objects to use uploaded CSV data.
+        scorer_config: pre-fetched scorer config dict. If None, fetched synchronously.
+        sync_neo4j: if True, attempt to sync the graph to Neo4j after the pipeline
+                    completes (best-effort; failures are logged, not raised).
         """
         activity: List[Dict[str, str]] = []
 
@@ -220,7 +228,13 @@ class DetectionOrchestrator:
             }
         )
         context_agent = ContextAgent(self.mock_kyc_db)
-        scorer_config = get_scorer_config()
+        if scorer_config is None:
+            try:
+                scorer_config = asyncio.get_event_loop().run_until_complete(
+                    get_scorer_config()
+                )
+            except RuntimeError:
+                scorer_config = {}
         scorer_agent = ScorerAgent(
             context_agent, graph=graph, scorer_config=scorer_config
         )
@@ -454,6 +468,25 @@ class DetectionOrchestrator:
                     else None,
                 }
             )
+
+        # Store graph reference for later Neo4j sync
+        self._last_graph = graph
+
+        # Best-effort Neo4j sync (non-blocking for the pipeline)
+        if sync_neo4j:
+            try:
+                from app.graph_store.neo4j_store import sync_graph_to_neo4j
+
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    # Schedule as background task — don't block the pipeline
+                    asyncio.ensure_future(sync_graph_to_neo4j(graph))
+                else:
+                    loop.run_until_complete(sync_graph_to_neo4j(graph))
+            except Exception as exc:
+                import logging
+
+                logging.getLogger(__name__).warning("Neo4j sync skipped: %s", exc)
 
         # Pattern summary
         pattern_counts: Dict[str, int] = {}
