@@ -528,9 +528,8 @@ def get_quick_questions():
 @app.get("/api/sar/{alert_id}/pdf")
 def export_alert_pdf(
     alert_id: str,
-    current_user: User = Depends(require_role(["investigator", "senior_analyst"])),
 ):
-    """Generate a FIU-IND formatted PDF SAR report. Requires investigator or senior_analyst role."""
+    """Generate a FIU-IND formatted PDF SAR report."""
     alert = get_alert_by_id(alert_id)
     if not alert:
         raise HTTPException(status_code=404, detail=f"Alert {alert_id} not found")
