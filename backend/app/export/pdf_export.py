@@ -260,28 +260,30 @@ def generate_alert_pdf(alert: Dict[str, Any]) -> bytes:
         story.append(Spacer(1, 3 * mm))
 
         if edges:
-            edge_rows = [["From", "To", "Amount (₹)", "Channel"]]
+            edge_rows = [["From", "To", "Amount", "Channel"]]
             for e in edges[:15]:
                 if isinstance(e, str):
-                    parts = e.replace("→", "|").split("|")
-                    edge_rows.append(
-                        [
-                            parts[0].strip() if len(parts) > 0 else "?",
-                            parts[1].strip() if len(parts) > 1 else "?",
-                            parts[2].strip() if len(parts) > 2 else "?",
-                            parts[3].strip() if len(parts) > 3 else "?",
-                        ]
-                    )
+                    # New format: "ACC001→ACC002 | ₹50,000 | UPI"
+                    # Old format: "ACC001->ACC002"
+                    if "→" in e or "->" in e:
+                        parts = e.replace("→", "|").replace("->", "|").split("|")
+                        from_node = parts[0].strip() if len(parts) > 0 else "?"
+                        to_node = parts[1].strip() if len(parts) > 1 else "?"
+                        amount = parts[2].strip() if len(parts) > 2 else "?"
+                        channel = parts[3].strip() if len(parts) > 3 else "?"
+                        edge_rows.append([from_node, to_node, amount, channel])
+                    else:
+                        edge_rows.append([e, "", "", ""])
                 elif isinstance(e, dict):
                     edge_rows.append(
                         [
                             e.get("sender_id", "?")[:20],
                             e.get("receiver_id", "?")[:20],
-                            f"{e.get('amount', 0):,.0f}",
+                            f"₹{e.get('amount', 0):,.0f}",
                             e.get("channel", "?")[:15],
                         ]
                     )
-            et = Table(edge_rows, colWidths=[4.5 * cm, 4.5 * cm, 4 * cm, 4 * cm])
+            et = Table(edge_rows, colWidths=[4 * cm, 4 * cm, 4 * cm, 4 * cm])
             et.setStyle(
                 TableStyle(
                     [
