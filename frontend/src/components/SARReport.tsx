@@ -58,9 +58,7 @@ export default function SARReport({ alert, chatMessages = [], onSendChat, isChat
     if (!alert) return;
     setPdfLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/sar/${alert.alert_id}/pdf`, {
-        headers: { ...authHeaders() },
-      });
+      const res = await fetch(`${API_BASE}/api/sar/${alert.alert_id}/pdf`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
