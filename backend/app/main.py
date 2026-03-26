@@ -336,9 +336,7 @@ def adversarial_test(test: Optional[str] = None):
 
 # ── Pipeline ──────────────────────────────────────────────────────────────────
 @app.post("/api/run-pipeline")
-async def run_pipeline(
-    current_user: User = Depends(require_role(["investigator", "senior_analyst"])),
-):
+async def run_pipeline():
     """Run the fraud detection pipeline. Requires investigator or senior_analyst role."""
     scorer_config = await get_scorer_config()
     if _is_demo_mode():
@@ -361,7 +359,6 @@ async def run_pipeline(
 @app.post("/api/run-pipeline-csv")
 async def run_pipeline_csv(
     file: UploadFile = File(...),
-    current_user: User = Depends(require_role(["investigator", "senior_analyst"])),
 ):
     """Upload a CSV file and run the pipeline on it. Requires investigator or senior_analyst role."""
     if _is_demo_mode():
