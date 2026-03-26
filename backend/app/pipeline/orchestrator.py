@@ -55,6 +55,17 @@ def _get_edges_for_pair(graph: nx.MultiDiGraph, u: str, v: str) -> List[Dict[str
     return result or [{"sender_id": u, "receiver_id": v}]
 
 
+def _format_edge_label(edge: Dict[str, Any]) -> str:
+    """Format edge dict as label with amount and channel for PDF display."""
+    sender = edge.get("sender_id", "?")
+    receiver = edge.get("receiver_id", "?")
+    amount = edge.get("amount", 0)
+    channel = edge.get("channel", "?")
+    if amount:
+        return f"{sender}→{receiver} | ₹{amount:,.0f} | {channel}"
+    return f"{sender}→{receiver}"
+
+
 class DetectionOrchestrator:
     def __init__(self):
         self.mock_kyc_db = build_mock_kyc()
@@ -386,7 +397,7 @@ class DetectionOrchestrator:
                 edges.extend(_get_edges_for_pair(graph, s, target))
             score_data = scorer_agent.score_pattern("Smurfing", nodes, edges=edges)
             if score_data["final_score"] >= _ALERT_THRESHOLD:
-                edge_labels = [f"{s}->{target}" for s in senders]
+                edge_labels = [_format_edge_label(e) for e in edges]
                 alerts.append(
                     self._make_alert(
                         score_data,
@@ -414,9 +425,7 @@ class DetectionOrchestrator:
                 edges.extend(_get_edges_for_pair(graph, hub, t))
             score_data = scorer_agent.score_pattern("HubAndSpoke", nodes, edges=edges)
             if score_data["final_score"] >= _ALERT_THRESHOLD:
-                edge_labels = [f"{s}->{hub}" for s in spokes_in] + [
-                    f"{hub}->{t}" for t in spokes_out
-                ]
+                edge_labels = [_format_edge_label(e) for e in edges]
                 alerts.append(
                     self._make_alert(
                         score_data,
@@ -444,9 +453,7 @@ class DetectionOrchestrator:
                 edges.extend(_get_edges_for_pair(graph, node, s))
             score_data = scorer_agent.score_pattern("PassThrough", nodes, edges=edges)
             if score_data["final_score"] >= _ALERT_THRESHOLD:
-                edge_labels = [f"{p}->{node}" for p in preds] + [
-                    f"{node}->{s}" for s in succs
-                ]
+                edge_labels = [_format_edge_label(e) for e in edges]
                 alerts.append(
                     self._make_alert(
                         score_data,
@@ -476,9 +483,7 @@ class DetectionOrchestrator:
                 "DormantActivation", nodes, edges=edges
             )
             if score_data["final_score"] >= _ALERT_THRESHOLD:
-                edge_labels = [f"{p}->{node}" for p in preds] + [
-                    f"{node}->{s}" for s in succs
-                ]
+                edge_labels = [_format_edge_label(e) for e in edges]
                 alerts.append(
                     self._make_alert(
                         score_data,
