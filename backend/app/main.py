@@ -1,3 +1,4 @@
+import asyncio
 import io
 import json
 import os
@@ -22,7 +23,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from app.models.schemas import TransactionBase
-from app.pipeline.orchestrator import DetectionOrchestrator
+from app.pipeline.orchestrator import DetectionOrchestrator, get_pending_activities
 from app import adversarial
 from app.feedback_store import (
     add_decision,
@@ -76,13 +77,40 @@ app = FastAPI(
 )
 
 
+_activity_poll_task: Optional[asyncio.Task] = None
+
+
+async def _poll_activity_queue() -> None:
+    """Poll the orchestrator activity queue and broadcast each event to all WS clients."""
+    while True:
+        await asyncio.sleep(0.3)
+        try:
+            events = get_pending_activities()
+            for evt in events:
+                await broadcast_agent_event(
+                    agent=evt["agent"],
+                    status="active",
+                    message=evt["message"],
+                )
+        except Exception:
+            pass
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
     await init_redis()
     await init_neo4j()
     streaming_task = await start_streaming()
+    global _activity_poll_task
+    _activity_poll_task = asyncio.create_task(_poll_activity_queue())
     yield
+    if _activity_poll_task:
+        _activity_poll_task.cancel()
+        try:
+            await _activity_poll_task
+        except Exception:
+            pass
     await stop_streaming()
     await close_neo4j()
     await close_db()
@@ -110,6 +138,13 @@ async def websocket_pipeline(websocket: WebSocket):
             data = await websocket.receive_text()
             if data == "ping":
                 await websocket.send_text("pong")
+            elif data == "flush":
+                events = get_pending_activities()
+                for evt in events:
+                    payload = json.dumps(
+                        {"agent": evt["agent"], "message": evt["message"]}
+                    )
+                    await websocket.send_text(payload)
     except Exception:
         pass
     finally:
@@ -134,7 +169,8 @@ async def broadcast_agent_event(agent: str, status: str, message: str, **extra):
 allowed_origins_env = os.getenv(
     "ALLOWED_ORIGINS",
     "http://localhost:3000,http://localhost:3001,http://localhost:3002,"
-    "http://127.0.0.1:3000,http://127.0.0.1:3001,http://127.0.0.1:3002",
+    "http://127.0.0.1:3000,http://127.0.0.1:3001,http://127.0.0.1:3002,"
+    "http://192.168.1.102:3000,http://0.0.0.0:3000",
 )
 allowed_origins = [o.strip() for o in allowed_origins_env.split(",") if o.strip()]
 

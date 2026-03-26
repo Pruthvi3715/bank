@@ -1,6 +1,8 @@
 import asyncio
 import uuid
 from datetime import datetime
+from queue import Queue
+from threading import Thread
 from typing import List, Dict, Any, Optional
 
 import networkx as nx
@@ -20,6 +22,25 @@ from app.ml.anomaly_detector import AnomalyDetector
 
 # Minimum risk score to generate an alert (PRD: "elevated" band starts at 40)
 _ALERT_THRESHOLD = 40.0
+
+# Thread-safe queue for streaming agent activity to WebSocket clients
+_activity_queue: Queue = Queue()
+
+
+def emit_activity(agent: str, message: str) -> None:
+    """Emit an agent activity step to the WebSocket broadcast queue."""
+    _activity_queue.put({"agent": agent, "message": message})
+
+
+def get_pending_activities() -> List[Dict[str, str]]:
+    """Drain all pending activity events from the queue. Call from async context."""
+    events = []
+    while not _activity_queue.empty():
+        try:
+            events.append(_activity_queue.get_nowait())
+        except Exception:
+            break
+    return events
 
 
 def _get_edges_for_pair(graph: nx.MultiDiGraph, u: str, v: str) -> List[Dict[str, Any]]:
@@ -68,6 +89,10 @@ class DetectionOrchestrator:
                     "message": f"Generated synthetic scenario: {len(transactions)} transactions",
                 }
             )
+            emit_activity(
+                "Data",
+                f"Generated synthetic scenario: {len(transactions)} transactions",
+            )
         else:
             activity.append(
                 {
@@ -75,6 +100,7 @@ class DetectionOrchestrator:
                     "message": f"Loaded {len(transactions)} transactions from CSV",
                 }
             )
+            emit_activity("Data", f"Loaded {len(transactions)} transactions from CSV")
 
         # Pre-filter: ignore micro-transactions (configurable via settings)
         try:
@@ -95,6 +121,10 @@ class DetectionOrchestrator:
                 "message": f"After pre-filter (amount >= {min_amount}): {len(transactions)} transactions",
             }
         )
+        emit_activity(
+            "PreFilter",
+            f"After pre-filter (amount >= {min_amount}): {len(transactions)} transactions",
+        )
 
         # Build graph
         graph_agent = GraphAgent()
@@ -104,6 +134,10 @@ class DetectionOrchestrator:
                 "agent": "Graph Agent",
                 "message": f"Ingesting batch: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges",
             }
+        )
+        emit_activity(
+            "Graph Agent",
+            f"Ingesting batch: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges",
         )
 
         # Detect patterns
@@ -118,6 +152,64 @@ class DetectionOrchestrator:
                     "agent": "Pathfinder Agent",
                     "message": f"Cycle detected — nodes {cycle_str}",
                 }
+            )
+            emit_activity("Pathfinder Agent", f"Cycle detected — nodes {cycle_str}")
+        if detections.get("cycles") and len(detections["cycles"]) > 5:
+            activity.append(
+                {
+                    "agent": "Pathfinder Agent",
+                    "message": f"... and {len(detections['cycles']) - 5} more cycles",
+                }
+            )
+        for target in detections.get("smurfing_targets", [])[:3]:
+            activity.append(
+                {
+                    "agent": "Pathfinder Agent",
+                    "message": f"Smurfing (fan-in) target: {target}",
+                }
+            )
+            emit_activity("Pathfinder Agent", f"Smurfing (fan-in) target: {target}")
+        if (
+            detections.get("smurfing_targets")
+            and len(detections["smurfing_targets"]) > 3
+        ):
+            activity.append(
+                {
+                    "agent": "Pathfinder Agent",
+                    "message": f"... and {len(detections['smurfing_targets']) - 3} more smurfing targets",
+                }
+            )
+        for hub in detections.get("hubs", [])[:3]:
+            activity.append(
+                {"agent": "Pathfinder Agent", "message": f"Hub-and-spoke hub: {hub}"}
+            )
+            emit_activity("Pathfinder Agent", f"Hub-and-spoke hub: {hub}")
+        for node in detections.get("pass_through", [])[:3]:
+            activity.append(
+                {
+                    "agent": "Pathfinder Agent",
+                    "message": f"Pass-through node: {node}",
+                }
+            )
+            emit_activity("Pathfinder Agent", f"Pass-through node: {node}")
+        for node in detections.get("dormant", [])[:3]:
+            activity.append(
+                {
+                    "agent": "Pathfinder Agent",
+                    "message": f"Dormant activation: {node}",
+                }
+            )
+            emit_activity("Pathfinder Agent", f"Dormant activation: {node}")
+        for path in detections.get("temporal_layering", [])[:2]:
+            activity.append(
+                {
+                    "agent": "Pathfinder Agent",
+                    "message": f"Temporal layering path ({len(path)} hops): {' → '.join(path[:5])}{'...' if len(path) > 5 else ''}",
+                }
+            )
+            emit_activity(
+                "Pathfinder Agent",
+                f"Temporal layering path ({len(path)} hops): {' → '.join(path[:5])}{'...' if len(path) > 5 else ''}",
             )
         if detections.get("cycles") and len(detections["cycles"]) > 5:
             activity.append(
@@ -175,6 +267,10 @@ class DetectionOrchestrator:
                     "message": f"Tarjan SCC: {len(tarjan_sccs)} strongly-connected components",
                 }
             )
+            emit_activity(
+                "Advanced Detector",
+                f"Tarjan SCC: {len(tarjan_sccs)} strongly-connected components",
+            )
         fraud_rings = advanced_results.get("fraud_rings", [])
         if fraud_rings:
             activity.append(
@@ -182,6 +278,10 @@ class DetectionOrchestrator:
                     "agent": "Advanced Detector",
                     "message": f"Louvain: {len(fraud_rings)} dense fraud ring communities",
                 }
+            )
+            emit_activity(
+                "Advanced Detector",
+                f"Louvain: {len(fraud_rings)} dense fraud ring communities",
             )
         centrality = advanced_results.get("centrality", {})
         top_pr = centrality.get("top_pagerank", [])[:3]
@@ -192,6 +292,10 @@ class DetectionOrchestrator:
                     "message": f"PageRank top nodes: {', '.join(n[0] for n in top_pr)}",
                 }
             )
+            emit_activity(
+                "Advanced Detector",
+                f"PageRank top nodes: {', '.join(n[0] for n in top_pr)}",
+            )
         top_bw = centrality.get("top_betweenness", [])[:3]
         if top_bw:
             activity.append(
@@ -199,6 +303,10 @@ class DetectionOrchestrator:
                     "agent": "Advanced Detector",
                     "message": f"Betweenness bridges: {', '.join(n[0] for n in top_bw)}",
                 }
+            )
+            emit_activity(
+                "Advanced Detector",
+                f"Betweenness bridges: {', '.join(n[0] for n in top_bw)}",
             )
         dormant_motifs = advanced_results.get("dormant_motifs", [])
         if dormant_motifs:
@@ -208,6 +316,10 @@ class DetectionOrchestrator:
                     "message": f"Dormant motifs: {len(dormant_motifs)} early-warning activations",
                 }
             )
+            emit_activity(
+                "Advanced Detector",
+                f"Dormant motifs: {len(dormant_motifs)} early-warning activations",
+            )
         mismatches = advanced_results.get("profile_mismatches", [])
         if mismatches:
             activity.append(
@@ -215,6 +327,10 @@ class DetectionOrchestrator:
                     "agent": "Advanced Detector",
                     "message": f"Profile mismatches: {len(mismatches)} accounts exceed 3x income",
                 }
+            )
+            emit_activity(
+                "Advanced Detector",
+                f"Profile mismatches: {len(mismatches)} accounts exceed 3x income",
             )
 
         # ML scoring (Isolation Forest + Gradient Boosting)
@@ -227,6 +343,7 @@ class DetectionOrchestrator:
                 "message": f"IF + GB scored {len(ml_scores)} nodes",
             }
         )
+        emit_activity("ML Detector", f"IF + GB scored {len(ml_scores)} nodes")
         context_agent = ContextAgent(self.mock_kyc_db)
         if scorer_config is None:
             try:
@@ -411,12 +528,19 @@ class DetectionOrchestrator:
                 "message": f"Risk Score computed for {len(alerts)} flagged subgraphs",
             }
         )
+        emit_activity(
+            "Scorer Agent", f"Risk Score computed for {len(alerts)} flagged subgraphs"
+        )
         for a in alerts[:5]:
             activity.append(
                 {
                     "agent": "Report Agent",
                     "message": f"Alert {a.pattern_type}: Score {a.risk_score:.0f}/100 — {a.disposition}",
                 }
+            )
+            emit_activity(
+                "Report Agent",
+                f"Alert {a.pattern_type}: Score {a.risk_score:.0f}/100 — {a.disposition}",
             )
         if len(alerts) > 5:
             activity.append(
