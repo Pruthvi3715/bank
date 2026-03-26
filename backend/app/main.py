@@ -24,7 +24,13 @@ from pydantic import BaseModel
 from app.models.schemas import TransactionBase
 from app.pipeline.orchestrator import DetectionOrchestrator
 from app import adversarial
-from app.feedback_store import add_decision, get_decisions, get_scorer_config
+from app.feedback_store import (
+    add_decision,
+    get_decisions,
+    get_scorer_config,
+    init_db,
+    close_db,
+)
 from app.sar_chatbot import (
     cache_pipeline_result,
     generate_chat_response,
@@ -32,6 +38,7 @@ from app.sar_chatbot import (
     get_cached_result,
     QUICK_QUESTIONS,
 )
+from app.cache.redis_cache import init_redis, close_redis, cache_set, cache_get
 from app.export.pdf_export import generate_alert_pdf
 from app.export.summary_pdf import generate_project_summary_pdf
 from app.events.consumer import (
@@ -53,6 +60,14 @@ from app.auth import (
     Token,
     User,
 )
+from app.graph_store.neo4j_store import (
+    init_neo4j,
+    close_neo4j,
+    sync_graph_to_neo4j,
+    run_cypher,
+    get_node_neighbors,
+    get_graph_stats,
+)
 
 app = FastAPI(
     title="GraphSentinel API",
@@ -63,9 +78,15 @@ app = FastAPI(
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    await init_db()
+    await init_redis()
+    await init_neo4j()
     streaming_task = await start_streaming()
     yield
     await stop_streaming()
+    await close_neo4j()
+    await close_db()
+    await close_redis()
     if streaming_task:
         try:
             streaming_task.cancel()
@@ -157,6 +178,17 @@ def _load_demo_cache(name: str = "demo_track_a") -> dict:
         return json.load(f)
 
 
+async def _load_demo_cache_async(name: str = "demo_track_a") -> dict:
+    """Load demo cache, checking Redis first before falling back to file."""
+    redis_key = f"demo:{name}"
+    cached = await cache_get(redis_key)
+    if cached is not None:
+        return cached
+    result = _load_demo_cache(name)
+    await cache_set(redis_key, result, ttl=86400)
+    return result
+
+
 def _parse_datetime(value) -> datetime:
     try:
         return pd.to_datetime(value, utc=False).to_pydatetime()
@@ -238,9 +270,10 @@ def health_check():
 
 # ── Demo Endpoints ────────────────────────────────────────────────────────────
 @app.get("/api/demo-track-a")
-def demo_track_a():
+async def demo_track_a():
     """Track A: Guaranteed demo path. Returns pre-cached result (no live LLM)."""
-    result = _load_demo_cache(os.getenv("DEMO_CACHE_NAME", "demo_track_a"))
+    cache_name = os.getenv("DEMO_CACHE_NAME", "demo_track_a")
+    result = await _load_demo_cache_async(cache_name)
     cache_pipeline_result(result)
     return result
 
@@ -267,15 +300,25 @@ def adversarial_test(test: Optional[str] = None):
 
 # ── Pipeline ──────────────────────────────────────────────────────────────────
 @app.post("/api/run-pipeline")
-def run_pipeline(
+async def run_pipeline(
     current_user: User = Depends(require_role(["investigator", "senior_analyst"])),
 ):
     """Run the fraud detection pipeline. Requires investigator or senior_analyst role."""
+    scorer_config = await get_scorer_config()
     if _is_demo_mode():
-        result = _load_demo_cache(os.getenv("DEMO_CACHE_NAME", "demo_track_a"))
+        result = await _load_demo_cache_async(
+            os.getenv("DEMO_CACHE_NAME", "demo_track_a")
+        )
     else:
-        result = orchestrator.run_detection_pipeline()
+        import asyncio
+
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(
+            None,
+            lambda: orchestrator.run_detection_pipeline(scorer_config=scorer_config),
+        )
     cache_pipeline_result(result)
+    await cache_set("pipeline:latest", result, ttl=7200)
     return result
 
 
@@ -299,8 +342,12 @@ async def run_pipeline_csv(
     except Exception as exc:
         raise HTTPException(status_code=400, detail="Unable to parse CSV file") from exc
     transactions = _rows_to_transactions(df)
-    result = orchestrator.run_detection_pipeline(transactions=transactions)
+    scorer_config = await get_scorer_config()
+    result = orchestrator.run_detection_pipeline(
+        transactions=transactions, scorer_config=scorer_config
+    )
     cache_pipeline_result(result)
+    await cache_set("pipeline:latest", result, ttl=7200)
     return result
 
 
@@ -385,7 +432,7 @@ class FeedbackBody(BaseModel):
 
 
 @app.post("/api/feedback")
-def submit_feedback(
+async def submit_feedback(
     body: FeedbackBody,
     current_user: User = Depends(require_role(["investigator", "senior_analyst"])),
 ):
@@ -400,7 +447,7 @@ def submit_feedback(
         )
     if not 1 <= body.confidence <= 5:
         raise HTTPException(status_code=400, detail="confidence must be 1-5")
-    return add_decision(
+    return await add_decision(
         alert_id=body.alert_id,
         decision=body.decision,
         confidence=body.confidence,
@@ -410,13 +457,13 @@ def submit_feedback(
 
 
 @app.get("/api/feedback/config")
-def get_feedback_config():
-    return get_scorer_config()
+async def get_feedback_config():
+    return await get_scorer_config()
 
 
 @app.get("/api/feedback/decisions")
-def list_feedback_decisions(alert_id: Optional[str] = None):
-    return get_decisions(alert_id=alert_id)
+async def list_feedback_decisions(alert_id: Optional[str] = None):
+    return await get_decisions(alert_id=alert_id)
 
 
 # ── SAR Chatbot ────────────────────────────────────────────────────────────────
@@ -545,6 +592,84 @@ def get_ml_info():
             },
         }
     return ml_info
+
+
+# ── Neo4j Graph Endpoints ──────────────────────────────────────────────────────
+@app.post("/api/graph/sync")
+async def graph_sync(
+    current_user: User = Depends(require_role(["investigator", "senior_analyst"])),
+):
+    """Sync the latest pipeline graph to Neo4j. Requires investigator or senior_analyst role."""
+    graph = orchestrator._last_graph
+    if graph is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No pipeline graph available. Run the pipeline first.",
+        )
+    try:
+        stats = await sync_graph_to_neo4j(graph)
+        return {"status": "synced", **stats}
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Neo4j sync failed: {exc}")
+
+
+class CypherQuery(BaseModel):
+    query: str
+    params: Optional[dict] = None
+
+
+@app.post("/api/graph/query")
+async def graph_query(
+    body: CypherQuery,
+    current_user: User = Depends(require_role(["investigator", "senior_analyst"])),
+):
+    """Run an arbitrary Cypher query against the Neo4j graph store. Requires investigator or senior_analyst role."""
+    # Block destructive queries from the exploration endpoint
+    lowered = body.query.strip().lower()
+    if any(
+        kw in lowered
+        for kw in ("detach delete", "drop ", "create constraint", "create index")
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Destructive queries are not allowed via this endpoint.",
+        )
+    try:
+        results = await run_cypher(body.query, body.params)
+        return {"results": results, "count": len(results)}
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Cypher query failed: {exc}")
+
+
+@app.get("/api/graph/node/{node_id}/neighbors")
+async def graph_node_neighbors(
+    node_id: str,
+    depth: int = 1,
+    current_user: User = Depends(
+        require_role(["investigator", "senior_analyst", "readonly"])
+    ),
+):
+    """Get a node's neighbours from Neo4j up to *depth* hops (max 5)."""
+    depth = max(1, min(depth, 5))
+    try:
+        data = await get_node_neighbors(node_id, depth)
+        return data
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Neo4j query failed: {exc}")
+
+
+@app.get("/api/graph/stats")
+async def graph_stats_endpoint(
+    current_user: User = Depends(
+        require_role(["investigator", "senior_analyst", "readonly"])
+    ),
+):
+    """Return Neo4j graph statistics (node/edge counts, top nodes by degree)."""
+    try:
+        stats = await get_graph_stats()
+        return stats
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Neo4j query failed: {exc}")
 
 
 if __name__ == "__main__":

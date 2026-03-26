@@ -21,6 +21,7 @@ services:
       - REDIS_URL=redis://redis:6379
       - CHROMADB_URL=http://chromadb:8000
       - REDPANDA_BROKERS=redpanda:9092
+      - DATABASE_URL=postgresql+asyncpg://gs_user:gs_password@postgres:5432/graphsentinel
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-graphsentinel-dev-secret-change-in-production}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
     volumes:
@@ -28,6 +29,8 @@ services:
       - ./backend/data:/app/data:ro
     depends_on:
       redis:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
       chromadb:
         condition: service_started
@@ -58,11 +61,37 @@ services:
     networks:
       - graphsentinel
 
+  # PostgreSQL — Persistent feedback & scorer config store
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=graphsentinel
+      - POSTGRES_USER=gs_user
+      - POSTGRES_PASSWORD=gs_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gs_user -d graphsentinel"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - graphsentinel
+
   # Redis Cache
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     restart: unless-stopped
     networks:
       - graphsentinel
@@ -77,6 +106,12 @@ services:
       - NEO4J_AUTH=neo4j/graphsentinel123
     volumes:
       - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     restart: unless-stopped
     networks:
       - graphsentinel
@@ -137,6 +172,7 @@ volumes:
   neo4j_data:
   chromadb_data:
   redpanda_data:
+  postgres_data:
 
 networks:
   graphsentinel:

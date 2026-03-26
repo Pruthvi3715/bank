@@ -22,4 +22,10 @@ passlib[bcrypt]
 langchain-openai
 langchain-core
 langchain-ollama
+redis[hiredis]>=5.0.0
+sqlalchemy[asyncio]>=2.0.0
+asyncpg>=0.29.0
+alembic>=1.13.0
+aiosqlite>=0.20.0
+neo4j>=5.0.0
 
