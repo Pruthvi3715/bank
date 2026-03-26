@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { authHeaders } from "@/lib/auth";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -25,10 +25,10 @@ interface SARReportProps {
 }
 
 export default function SARReport({ alert, chatMessages = [], onSendChat, isChatLoading }: SARReportProps) {
-  const printRef = useRef<HTMLDivElement>(null);
   const [feedbackConfidence, setFeedbackConfidence] = useState(3);
   const [feedbackNotes, setFeedbackNotes] = useState("");
   const [feedbackSent, setFeedbackSent] = useState<string | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const submitFeedback = async (
     decision: "confirmed_fraud" | "false_positive" | "unclear"
@@ -55,20 +55,27 @@ export default function SARReport({ alert, chatMessages = [], onSendChat, isChat
   };
 
   const downloadPDF = async () => {
-    if (!alert || typeof window === "undefined") return;
-    const html2pdf = (await import("html2pdf.js")).default;
-    const element = printRef.current;
-    if (!element) return;
-    html2pdf()
-      .set({
-        margin: 0.5,
-        filename: `SAR_FIU_IND_${alert.alert_id.split("-")[0]}.pdf`,
-        image: { type: "jpeg" as const, quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: "in", format: "letter", orientation: "portrait" as const },
-      })
-      .from(element)
-      .save();
+    if (!alert) return;
+    setPdfLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/sar/${alert.alert_id}/pdf`, {
+        headers: { ...authHeaders() },
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `GraphSentinel_SAR_${alert.alert_id.split("-")[0]}_${new Date().toISOString().slice(0, 10)}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      console.error("PDF download failed");
+    } finally {
+      setPdfLoading(false);
+    }
   };
 
   if (!alert) {
@@ -102,17 +109,18 @@ export default function SARReport({ alert, chatMessages = [], onSendChat, isChat
           <Button
             onClick={downloadPDF}
             variant="outline"
+            disabled={pdfLoading}
             className="gap-1.5 text-[10px] font-mono uppercase tracking-wider h-7 px-2 cursor-pointer"
           >
-            <Download className="w-3 h-3" />
-            PDF
+            <Download className={`w-3 h-3 ${pdfLoading ? "animate-pulse" : ""}`} />
+            {pdfLoading ? "PDF..." : "PDF"}
           </Button>
         </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="px-4 py-4 space-y-5" ref={printRef}>
+        <div className="px-4 py-4 space-y-5">
           {/* Detection Summary */}
           <motion.section
             initial={{ opacity: 0 }}

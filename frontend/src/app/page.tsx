@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { authHeaders } from "@/lib/auth";
+import { usePipelineWebSocket } from "@/lib/usePipelineWebSocket";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +36,7 @@ import {
   PatternType,
   PipelineResponse,
   SARChatMessage,
+  AgentActivityStep,
 } from "@/types/api";
 
 const API_BASE =
@@ -65,6 +67,8 @@ export default function Dashboard() {
   const [toDate, setToDate] = useState<string>("");
   const [chatMessages, setChatMessages] = useState<SARChatMessage[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
+
+  const { steps: liveSteps, clearSteps } = usePipelineWebSocket();
 
   const handleSendChat = async (message: string) => {
     if (!selectedAlert) return;
@@ -109,6 +113,7 @@ export default function Dashboard() {
     setLoading(true);
     setSelectedAlert(null);
     setChatMessages([]);
+    clearSteps();
     try {
       const url =
         demoTrack === "A"
@@ -132,6 +137,7 @@ export default function Dashboard() {
     setLoading(true);
     setSelectedAlert(null);
     setIsolatedAlert(null);
+    clearSteps();
     try {
       const formData = new FormData();
       formData.append("file", csvFile);
@@ -429,7 +435,7 @@ export default function Dashboard() {
               {/* Bottom Row: Agent Activity + Alert Feed */}
               <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-4">
                 <AgentActivityPanel
-                  steps={results?.agent_activity ?? []}
+                  steps={liveSteps.length > 0 ? liveSteps : (results?.agent_activity ?? [])}
                 />
                 <AlertFeed
                   alerts={filteredAlerts.slice(0, 6)}

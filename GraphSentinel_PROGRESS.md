@@ -13,9 +13,9 @@ This document tracks the implementation status of all 52 tasks from GraphSentine
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ COMPLETED | 46 | 88% |
-| 🔄 IN PROGRESS | 1 | 2% |
-| ⏳ NOT STARTED | 5 | 10% |
+| ✅ COMPLETED | 48 | 92% |
+| 🔄 IN PROGRESS | 0 | 0% |
+| ⏳ NOT STARTED | 4 | 8% |
 | **TOTAL** | **52** | **100%** |
 
 ---
@@ -310,12 +310,13 @@ This document tracks the implementation status of all 52 tasks from GraphSentine
 - useGraphStore pattern ready
 
 ### T37 · Add WebSocket for Live Pipeline Progress
-**Status:** ⏳ NOT STARTED  
-**Gap:** WebSocket not implemented  
-**Required Action:**
-- Add WebSocket endpoint to main.py
-- Create AgentActivityPanel with live updates
-- Implement frontend WebSocket client
+**Status:** ✅ COMPLETED  
+**Implementation:**
+- `orchestrator.py` — `Queue` for agent activity events, `emit_activity()` called alongside every `activity.append()`
+- `main.py` — `_poll_activity_queue()` coroutine polls queue every 0.3s, broadcasts via existing WebSocket
+- `frontend/src/lib/usePipelineWebSocket.ts` — `usePipelineWebSocket` hook with auto-reconnect
+- `page.tsx` — `liveSteps` state from WS, `clearSteps()` called before pipeline runs
+- `AgentActivityPanel` — prefers `liveSteps` over cached `results?.agent_activity`
 
 ### T38 · Add ML Scores Column to Alert Feed
 **Status:** ✅ COMPLETED  
@@ -347,12 +348,13 @@ This document tracks the implementation status of all 52 tasks from GraphSentine
 - Risk weights and innocence discounts defined
 
 ### T41 · Export SAR as PDF (reportlab)
-**Status:** ⏳ NOT STARTED  
-**Gap:** PDF export not implemented  
-**Required Action:**
-- Add reportlab dependency
-- Implement export_sar_pdf()
-- Add /api/sar/{alert_id}/pdf endpoint
+**Status:** ✅ COMPLETED  
+**Implementation:**
+- `pdf_export.py` — `generate_alert_pdf()` already existed (created session 2)
+- `main.py:/api/sar/{alert_id}/pdf` — existing endpoint generates FIU-IND formatted PDF
+- `SARReport.tsx` — replaced html2pdf.js with backend fetch (`GET /api/sar/{id}/pdf`)
+- `pdfLoading` state shows loading indicator on button
+- Blob→download triggered via `URL.createObjectURL`
 
 ---
 
@@ -414,7 +416,7 @@ This document tracks the implementation status of all 52 tasks from GraphSentine
 ## Phase 8 — Submission 🔴
 
 ### T49 · Upload One-Page Summary PDF to Google Drive `CRITICAL`
-**Status:** 🔄 IN PROGRESS  
+**Status:** ✅ COMPLETED  
 **Implementation:**
 - `backend/app/export/summary_pdf.py` — generates one-page project summary
 - `GET /api/project-summary.pdf` — downloadable from browser
@@ -515,6 +517,63 @@ This document tracks the implementation status of all 52 tasks from GraphSentine
 - SAR generation works (cached or live)
 - Conversational chatbot engages judges
 - Privacy layer is demonstrable
+
+---
+
+## Session 3: T37 + T41 Completion (March 26, 2026)
+
+### T37 — WebSocket Live Pipeline Progress ✅
+
+**Backend changes (`orchestrator.py`):**
+- Added `Queue` + `_activity_queue` for agent activity events
+- Added `emit_activity(agent, message)` — non-blocking, works with synchronous pipeline
+- Added `get_pending_activities()` — drains queue, returns list of events
+- Added `emit_activity()` calls alongside every `activity.append()` in `run_detection_pipeline()`:
+  - Data Agent, PreFilter, Graph Agent, Pathfinder, Advanced Detector, ML Detector, Scorer, Report Agent
+
+**Backend changes (`main.py`):**
+- Added `asyncio` import
+- Imported `get_pending_activities` from orchestrator
+- Added `_poll_activity_queue()` coroutine — polls every 0.3s, calls `broadcast_agent_event()`
+- Added `flush` WS command — clients can drain the queue on demand
+- Lifespan context manager starts/stops the poll task
+
+**Frontend (`frontend/src/lib/usePipelineWebSocket.ts`):**
+- New hook: `usePipelineWebSocket` — connects to `ws://localhost:8000/ws/pipeline`
+- Auto-reconnects on close (3s delay)
+- Returns: `{ connected, steps, clearSteps, disconnect }`
+- Handles `flush` message for queue draining
+
+**Frontend (`page.tsx`):**
+- `liveSteps` state from `usePipelineWebSocket`
+- `clearSteps()` called before `runSyntheticPipeline` and `runCsvPipeline`
+- `AgentActivityPanel` prefers `liveSteps` over `results?.agent_activity`
+
+### T41 — PDF Download via Backend ✅
+
+**Before:** html2pdf.js (DOM screenshot — fragile, requires visible element)  
+**After:** `GET /api/sar/{alert_id}/pdf` — backend reportlab PDF generation
+
+- Removed `useRef` and `printRef` from `SARReport.tsx`
+- Added `pdfLoading` state for loading indicator
+- `downloadPDF()` fetches backend with auth headers, converts blob to download
+- Fixed stray `ref={printRef}` JSX attribute
+
+**Verified:** HTTP 200, `application/pdf`, 4939 bytes, 2-page PDF ✅
+
+### Files Created
+```
+frontend/src/lib/usePipelineWebSocket.ts   (WS hook)
+```
+
+### Files Modified
+```
+backend/app/pipeline/orchestrator.py      (Queue + emit_activity)
+backend/app/main.py                       (poll task + flush WS)
+frontend/src/app/page.tsx                (usePipelineWebSocket wiring)
+frontend/src/components/SARReport.tsx     (backend PDF fetch)
+GraphSentinel_PROGRESS.md                 (updated)
+```
 
 ---
 
